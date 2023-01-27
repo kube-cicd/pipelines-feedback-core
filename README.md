@@ -15,3 +15,9 @@ Implementations
 ---------------
 
 - [Kubernetes batch/v1 Jobs: Reference implementation](./pkgs/implementation)
+
+
+Development
+-----------
+
+[If you want to join the development or create your own controller, take a look there.](./DEVELOPMENT.md)
