@@ -3,6 +3,7 @@ Pipelines Feedback Core
 
 Generic Kubernetes controller watching Jobs on your cluster and notifying external systems, mainly Github, Gitlab and everything what is supported by JX [go-scm](https://github.com/jenkins-x/go-scm).
 
+> NOTICE: THIS IS A WORK IN PROGRESS
 
 Framework
 ---------
