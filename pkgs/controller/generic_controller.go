@@ -84,18 +84,24 @@ func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, k
 		Recorder:   &recorder,
 		KubeConfig: kubeConfig,
 		Config:     gc.ConfigProvider,
+		Log:        logrus.WithFields(map[string]interface{}{}),
 	}
-	services := map[string]any{
-		"ConfigProvider":       gc.ConfigProvider,
-		"PipelineInfoProvider": gc.PipelineInfoProvider,
-		"FeedbackReceiver":     gc.FeedbackReceiver,
+	nErr := func(name string) error {
+		return errors.New(fmt.Sprintf("cannot inject dependencies to %s. Does not implement WithInitialization", name))
 	}
-	for name, service := range services {
-		if _, ok := service.(wiring.WithInitialization); !ok {
-			return errors.New(fmt.Sprintf("cannot inject dependencies to %s. Does not implement WithInitialization", name))
+	if _, ok := gc.ConfigProvider.(wiring.WithInitialization); ok {
+		if err := gc.ConfigProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
+			return nErr("ConfigProvider")
 		}
-		if err := service.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
+	}
+	if _, ok := gc.PipelineInfoProvider.(wiring.WithInitialization); ok {
+		if err := gc.PipelineInfoProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
+			return nErr("PipelineInfoProvider")
+		}
+	}
+	if _, ok := gc.FeedbackReceiver.(wiring.WithInitialization); ok {
+		if err := gc.FeedbackReceiver.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
+			return nErr("FeedbackReceiver")
 		}
 	}
 	return nil

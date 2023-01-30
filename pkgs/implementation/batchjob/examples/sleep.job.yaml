@@ -1,0 +1,19 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: sleep
+    namespace: default
+    annotations:
+        pipelines-feedback.keskad.pl/https-repo-url: "https://example.org/example/example"
+        pipelines-feedback.keskad.pl/commit: "4e3e18222f015025bd23f43b8df78f2210050019"
+        pipelines-feedback.keskad.pl/ref: "refs/heads/main"
+spec:
+    template:
+        spec:
+            containers:
+                - name: sleep
+                  image: busybox:latest
+                  command: ["/bin/sh", "-c", "sleep 10"]
+            restartPolicy: Never
+    backoffLimit: 4
