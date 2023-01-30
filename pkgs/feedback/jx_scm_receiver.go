@@ -2,14 +2,13 @@ package feedback
 
 import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/record"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 )
 
 type JXSCMReceiver struct {
 }
 
-func (JXSCMReceiver) InjectDependencies(recorder record.EventRecorder, kubeconfig *rest.Config) error {
+func (JXSCMReceiver) InitializeWithContext(sc *wiring.ServiceContext) error {
 	return nil
 }
 

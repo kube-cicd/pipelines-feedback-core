@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/google/uuid"
@@ -74,18 +76,27 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(gc)
 }
 
-func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeconfig *rest.Config) error {
+// InjectDependencies is wiring dependencies to all services
+func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config) error {
 	gc.recorder = recorder
-	gc.kubeconfig = kubeconfig
-
-	if err := gc.ConfigProvider.InjectDependencies(recorder, kubeconfig); err != nil {
-		return errors.Wrap(err, "cannot inject dependencies to ConfigProvider")
+	gc.kubeconfig = kubeConfig
+	sc := wiring.ServiceContext{
+		Recorder:   &recorder,
+		KubeConfig: kubeConfig,
+		Config:     gc.ConfigProvider,
 	}
-	if err := gc.PipelineInfoProvider.InjectDependencies(recorder, kubeconfig); err != nil {
-		return errors.Wrap(err, "cannot inject dependencies to ConfigProvider")
+	services := map[string]any{
+		"ConfigProvider":       gc.ConfigProvider,
+		"PipelineInfoProvider": gc.PipelineInfoProvider,
+		"FeedbackReceiver":     gc.FeedbackReceiver,
 	}
-	if err := gc.FeedbackReceiver.InjectDependencies(recorder, kubeconfig); err != nil {
-		return errors.Wrap(err, "cannot inject dependencies to ConfigProvider")
+	for name, service := range services {
+		if _, ok := service.(wiring.WithInitialization); !ok {
+			return errors.New(fmt.Sprintf("cannot inject dependencies to %s. Does not implement WithInitialization", name))
+		}
+		if err := service.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
+			return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
+		}
 	}
 	return nil
 }

@@ -3,22 +3,21 @@ package batchjob
 import (
 	"context"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/k8s"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/pkg/errors"
 	v1model "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/record"
 )
 
 type BatchV1JobProvider struct {
 	client *v1.BatchV1Client
 }
 
-func (bjp *BatchV1JobProvider) InjectDependencies(recorder record.EventRecorder, kubeconfig *rest.Config) error {
-	client, err := v1.NewForConfig(kubeconfig)
+func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) error {
+	client, err := v1.NewForConfig(sc.KubeConfig)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
 	}
