@@ -1,15 +1,75 @@
 package contract
 
-import "time"
+import (
+	"github.com/pkg/errors"
+	"net/url"
+	"strings"
+	"time"
+)
 
 // PipelineInfo is a point-in-time Pipeline status including the SCM information
 type PipelineInfo struct {
 	ctx SCMContext
 
-	name        string
-	dateStarted time.Time
-	status      Status
-	stages      []PipelineStage
+	name         string
+	instanceName string
+	namespace    string
+	dateStarted  time.Time
+	status       Status
+	stages       []PipelineStage
+	url          string
+}
+
+func (pi PipelineInfo) GetSCMContext() SCMContext {
+	return pi.ctx
+}
+
+// GetStatus is calculating the pipeline status basing on the results of all children stages
+func (pi PipelineInfo) GetStatus() Status {
+	pending := 0
+	succeeded := 0
+	running := 0
+	allStages := len(pi.stages)
+
+	for _, stage := range pi.stages {
+		if stage.Status == Errored {
+			return Errored
+		}
+		if stage.Status == Failed {
+			return Failed
+		}
+		if stage.Status == Pending {
+			pending += 1
+		}
+		if stage.Status == Succeeded {
+			succeeded += 1
+		}
+		if stage.Status == Running {
+			running += 1
+		}
+	}
+	if pending > 0 {
+		return Pending
+	}
+	if allStages == succeeded {
+		return Succeeded
+	}
+	if running > 0 {
+		return Running
+	}
+	return Errored
+}
+
+func (pi PipelineInfo) GetFullName() string {
+	return pi.namespace + "/" + pi.instanceName
+}
+
+func (pi PipelineInfo) GetUrl() string {
+	return pi.url
+}
+
+func (pi PipelineInfo) GetName() string {
+	return pi.namespace + "/" + pi.name
 }
 
 func NewPipelineInfo(scm SCMContext, name string, dateStarted time.Time, status Status, stages []PipelineStage) *PipelineInfo {
@@ -50,8 +110,40 @@ type SCMContext struct {
 
 	// PrId is a pull/merge request id
 	PrId string
+
+	OrganizationName string
+	RepositoryName   string
+}
+
+func NewSCMContext(repoHttpsUrl string) (SCMContext, error) {
+	scm := SCMContext{}
+
+	// not matching, not containing the annotation
+	if len(repoHttpsUrl) == 0 {
+		return scm, nil
+	}
+
+	u, err := url.Parse(repoHttpsUrl)
+	if err != nil {
+		return scm, errors.Wrap(err, "not a valid url")
+	}
+
+	nameSplit := strings.Split(u.Path, "/")
+
+	if len(nameSplit) < 3 {
+		return scm, errors.New("repository url does not contain valid organization and repository names")
+	}
+
+	scm.OrganizationName = nameSplit[1]
+	scm.RepositoryName = nameSplit[2]
+
+	return scm, nil
 }
 
 func (c SCMContext) IsValid() bool {
 	return (c.Commit != "" || c.PrId != "") && c.RepoHttpsUrl != ""
+}
+
+func (c SCMContext) GetNameWithOrg() string {
+	return c.OrganizationName + "/" + c.RepositoryName
 }

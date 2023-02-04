@@ -34,12 +34,15 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 	}
 
 	// validate
-	if !k8s.HasUsableAnnotations(job.ObjectMeta) {
+	if ok, err := k8s.HasUsableAnnotations(job.ObjectMeta); !ok {
+		if err != nil {
+			return contract.PipelineInfo{}, err
+		}
 		return contract.PipelineInfo{}, errors.New(provider.ErrNotMatched)
 	}
 
 	// translate its status
-	scm := k8s.CreateSCMContextFromKubernetesAnnotations(job.ObjectMeta)
+	scm, _ := k8s.CreateSCMContextFromKubernetesAnnotations(job.ObjectMeta)
 	jobStatus := translateJobStatus(job)
 	pi := contract.NewPipelineInfo(
 		scm,

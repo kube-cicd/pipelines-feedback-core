@@ -118,7 +118,9 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	// dependencies
-	app.Controller.InjectDependencies(recorder, kubeconfig)
+	if err := app.Controller.InjectDependencies(recorder, kubeconfig); err != nil {
+		return errors.Wrap(err, "cannot inject dependencies")
+	}
 
 	if err = app.Controller.SetupWithManager(mgr); err != nil {
 		appLog.Error(err, "unable to setup controller", "controller")

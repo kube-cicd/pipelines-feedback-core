@@ -50,15 +50,15 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, nil
 		}
 
-		logger.Errorf("cannot retrieve resource")
+		logger.Errorf("cannot retrieve resource: %v", retrieveErr.Error())
 		return ctrl.Result{Requeue: true}, errors.Wrap(retrieveErr, "cannot receive Pipeline status")
 	}
 
 	//
 	// Notify the Feedback Receiver
 	//
-	if err := gc.FeedbackReceiver.Update(retrieved); err != nil {
-		logger.Errorf("cannot update feedback retriever")
+	if err := gc.FeedbackReceiver.Update(ctx, retrieved); err != nil {
+		logger.Errorf("cannot update feedback retriever: %s", err.Error())
 		return ctrl.Result{RequeueAfter: time.Second * 30}, errors.Wrap(err, "cannot update feedback receiver")
 	}
 
@@ -86,22 +86,22 @@ func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, k
 		Config:     gc.ConfigProvider,
 		Log:        logrus.WithFields(map[string]interface{}{}),
 	}
-	nErr := func(name string) error {
-		return errors.New(fmt.Sprintf("cannot inject dependencies to %s. Does not implement WithInitialization", name))
+	nErr := func(name string, err error) error {
+		return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
 	}
 	if _, ok := gc.ConfigProvider.(wiring.WithInitialization); ok {
 		if err := gc.ConfigProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-			return nErr("ConfigProvider")
+			return nErr("ConfigProvider", err)
 		}
 	}
 	if _, ok := gc.PipelineInfoProvider.(wiring.WithInitialization); ok {
 		if err := gc.PipelineInfoProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-			return nErr("PipelineInfoProvider")
+			return nErr("PipelineInfoProvider", err)
 		}
 	}
 	if _, ok := gc.FeedbackReceiver.(wiring.WithInitialization); ok {
 		if err := gc.FeedbackReceiver.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-			return nErr("FeedbackReceiver")
+			return nErr("FeedbackReceiver", err)
 		}
 	}
 	return nil
