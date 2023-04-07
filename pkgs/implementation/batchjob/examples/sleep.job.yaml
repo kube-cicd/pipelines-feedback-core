@@ -5,9 +5,10 @@ metadata:
     name: sleep
     namespace: default
     annotations:
-        pipelines-feedback.keskad.pl/https-repo-url: "https://example.org/example/example"
-        pipelines-feedback.keskad.pl/commit: "4e3e18222f015025bd23f43b8df78f2210050019"
-        pipelines-feedback.keskad.pl/ref: "refs/heads/main"
+        pipelines-feedback.keskad.pl/https-repo-url: "https://github.com/keskad/jx-gitops"
+        pipelines-feedback.keskad.pl/commit: "a78274796fb522f558c3e17ac2393c5a93b3fc6c"
+        pipelines-feedback.keskad.pl/ref: "refs/heads/keskad-patch-1"
+        pipelines-feedback.keskad.pl/pr-id: "1"
 spec:
     template:
         spec:

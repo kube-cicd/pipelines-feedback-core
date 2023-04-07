@@ -18,6 +18,16 @@ type PipelineInfo struct {
 	status       Status
 	stages       []PipelineStage
 	url          string
+	retrievalNum int
+}
+
+func (pi PipelineInfo) GetStoreId() string {
+	return pi.namespace + "/" + pi.name + "/" + pi.instanceName
+}
+
+// IsJustCreated tells us if the resource was retrieved from the cluster first time
+func (pi PipelineInfo) IsJustCreated() bool {
+	return pi.retrievalNum < 2
 }
 
 func (pi PipelineInfo) GetSCMContext() SCMContext {
@@ -72,13 +82,21 @@ func (pi PipelineInfo) GetName() string {
 	return pi.namespace + "/" + pi.name
 }
 
-func NewPipelineInfo(scm SCMContext, name string, dateStarted time.Time, status Status, stages []PipelineStage) *PipelineInfo {
+func (pi PipelineInfo) SetRetrievalCount(num int) {
+	pi.retrievalNum = num
+}
+
+func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName string, dateStarted time.Time,
+	status Status, stages []PipelineStage) *PipelineInfo {
+
 	return &PipelineInfo{
-		ctx:         scm,
-		name:        name,
-		dateStarted: dateStarted,
-		status:      status,
-		stages:      stages,
+		ctx:          scm,
+		name:         name,
+		instanceName: instanceName,
+		namespace:    namespace,
+		dateStarted:  dateStarted,
+		status:       status,
+		stages:       stages,
 	}
 }
 
@@ -91,6 +109,23 @@ const (
 	Errored   Status = "errored"
 	Succeeded Status = "succeeded"
 )
+
+func (s Status) IsFinished() bool {
+	return s == Failed || s == Errored || s == Succeeded
+}
+
+func (s Status) IsRunning() bool {
+	return s == Running
+}
+
+func (s Status) AsHumanReadableDescription() string {
+	if s == Running || s == Pending {
+		return "is " + string(s)
+	} else if s == Failed || s == Errored || s == Succeeded {
+		return string(s)
+	}
+	return "is in unknown state"
+}
 
 // PipelineStage represents a status of a particular Pipeline stage (naming: in Jenkins "Stage", in Tekton "Task")
 type PipelineStage struct {

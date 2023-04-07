@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -31,9 +33,12 @@ type GenericController struct {
 	// can read configuration from various sources
 	ConfigProvider config.ConfigurationProvider
 
+	// simple key-value store
+	Store store.Operator
+
 	recorder record.EventRecorder
 
-	kubeconfig *rest.Config
+	kubeConfig *rest.Config
 }
 
 func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -57,12 +62,51 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//
 	// Notify the Feedback Receiver
 	//
-	if err := gc.FeedbackReceiver.Update(ctx, retrieved); err != nil {
+	if err := gc.updateProgress(ctx, retrieved, logger); err != nil {
 		logger.Errorf("cannot update feedback retriever: %s", err.Error())
 		return ctrl.Result{RequeueAfter: time.Second * 30}, errors.Wrap(err, "cannot update feedback receiver")
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// updateProgress decides when to trigger notification events to the RECEIVER
+func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger *logrus.Entry) error {
+	// Always update progress
+	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetStoreId())
+	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved); upErr != nil {
+		return upErr
+	}
+
+	// Single-time events
+	if retrieved.IsJustCreated() && !retrieved.GetStatus().IsFinished() && !gc.Store.WasEventAlreadySent(retrieved, "created") {
+		logger.Debugf("GenericController -> WhenCreated(%s)", retrieved.GetStoreId())
+		if createErr := gc.FeedbackReceiver.WhenCreated(ctx, retrieved); createErr != nil {
+			return createErr
+		}
+		if recErr := gc.Store.RecordEventFiring(retrieved, "created"); recErr != nil {
+			logger.Warning("cannot record event 'created'")
+		}
+	}
+	if retrieved.GetStatus().IsRunning() && !gc.Store.WasEventAlreadySent(retrieved, "started") {
+		logger.Debugf("GenericController -> WhenStarted(%s)", retrieved.GetStoreId())
+		if startErr := gc.FeedbackReceiver.WhenStarted(ctx, retrieved); startErr != nil {
+			return startErr
+		}
+		if recErr := gc.Store.RecordEventFiring(retrieved, "started"); recErr != nil {
+			logger.Warning("cannot record event 'started'")
+		}
+	}
+	if retrieved.GetStatus().IsFinished() && !gc.Store.WasEventAlreadySent(retrieved, "finished") {
+		logger.Debugf("GenericController -> WhenFinished(%s)", retrieved.GetStoreId())
+		if finishErr := gc.FeedbackReceiver.WhenFinished(ctx, retrieved); finishErr != nil {
+			return finishErr
+		}
+		if recErr := gc.Store.RecordEventFiring(retrieved, "finished"); recErr != nil {
+			logger.Warning("cannot record event 'finished'")
+		}
+	}
+	return nil
 }
 
 func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
@@ -79,12 +123,13 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 // InjectDependencies is wiring dependencies to all services
 func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config) error {
 	gc.recorder = recorder
-	gc.kubeconfig = kubeConfig
+	gc.kubeConfig = kubeConfig
 	sc := wiring.ServiceContext{
 		Recorder:   &recorder,
 		KubeConfig: kubeConfig,
 		Config:     gc.ConfigProvider,
 		Log:        logrus.WithFields(map[string]interface{}{}),
+		Store:      &gc.Store,
 	}
 	nErr := func(name string, err error) error {
 		return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))

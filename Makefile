@@ -9,6 +9,9 @@ build: fmt vet ## Build manager binary.
 	@mkdir -p $(LOCALBIN)
 	go build -o $(LOCALBIN)/batchv1-controller main.go
 
+run:
+	./.build/batchv1-controller
+
 .PHONY: fmt
 fmt: ## Run go fmt against code.
 	go fmt ./...
