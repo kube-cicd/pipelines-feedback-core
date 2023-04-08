@@ -76,15 +76,12 @@ func (jx *JXSCMReceiver) UpdateProgress(ctx context.Context, pipeline contract.P
 	}
 
 	if jx.client.Repositories != nil {
-		// todo: Create status for multiple stages?
-		// todo: Choose between agregated status vs per-stage status?
-
 		_, _, commitStatusErr = jx.client.Repositories.CreateStatus(ctx, pipeline.GetSCMContext().GetNameWithOrg(),
 			scmCtx.Commit, &scm.StatusInput{
 				State:  overallStatus,
-				Label:  "pipelines-feedback",
+				Label:  "Pipeline: " + pipeline.GetFullName(),
 				Desc:   ourStatus.AsHumanReadableDescription(),
-				Target: "", // todo: URL
+				Target: pipeline.GetUrl(), // todo: URL
 			},
 		)
 	} else {

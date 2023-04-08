@@ -71,9 +71,10 @@ func (pi PipelineInfo) GetStatus() Status {
 }
 
 func (pi PipelineInfo) GetFullName() string {
-	return pi.namespace + "/" + pi.instanceName
+	return pi.namespace + "/" + pi.name + "/" + pi.instanceName
 }
 
+// GetUrl returns a URL to some dashboard, where the pipeline could be looked up
 func (pi PipelineInfo) GetUrl() string {
 	return pi.url
 }
@@ -87,7 +88,7 @@ func (pi PipelineInfo) SetRetrievalCount(num int) {
 }
 
 func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName string, dateStarted time.Time,
-	status Status, stages []PipelineStage) *PipelineInfo {
+	status Status, stages []PipelineStage, url string) *PipelineInfo {
 
 	return &PipelineInfo{
 		ctx:          scm,
@@ -97,6 +98,7 @@ func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName
 		dateStarted:  dateStarted,
 		status:       status,
 		stages:       stages,
+		url:          url,
 	}
 }
 

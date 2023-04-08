@@ -7,11 +7,13 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/k8s"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1model "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
+	"os"
 	"time"
 )
 
@@ -58,6 +60,13 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		startTime = job.Status.StartTime.Time
 	}
 
+	// todo: use configuration provider
+	dashboardUrl, dashboardTplErr := templating.TemplateDashboardUrl(os.Getenv("DASHBOARD_URL"), job, job.TypeMeta)
+	if dashboardTplErr != nil {
+		bjp.logger.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
+	}
+
+	// create an universal PipelineInfo object
 	pi := contract.NewPipelineInfo(
 		scm,
 		job.Namespace,
@@ -68,8 +77,8 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		[]contract.PipelineStage{
 			{Name: "Job", Status: jobStatus},
 		},
+		dashboardUrl,
 	)
-
 	eventNum := bjp.store.CountHowManyTimesKubernetesResourceReceived(pi)
 	bjp.logger.Debugf("count(%s) = %v", job.Name, eventNum)
 	pi.SetRetrievalCount(eventNum)
