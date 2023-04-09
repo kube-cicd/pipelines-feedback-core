@@ -42,7 +42,7 @@ func NewRootCommand(app *PipelinesFeedbackApp) *cobra.Command {
 		command.Flags().StringVarP(&app.customConfigProvider, "config-provider", "c", "local", "Sets a ConfigProvider (possible options: local)")
 	}
 
-	command.Flags().BoolVarP(&app.debug, "debug", "v", true, "Increase verbosity to the debug level")
+	command.Flags().BoolVarP(&app.debug, "debug", "v", false, "Increase verbosity to the debug level")
 	command.Flags().StringVarP(&app.metricsBindAddress, "metrics-bind-address", "m", ":8080", "Metrics bind address")
 	command.Flags().StringVarP(&app.healthProbeBindAddress, "health-probe-bind-address", "p", ":8081", "Health probe bind address")
 	command.Flags().BoolVarP(&app.leaderElect, "leader-elect", "l", false, "Enable leader election")
@@ -84,6 +84,7 @@ func (app *PipelinesFeedbackApp) populateConfigProvider() error {
 }
 
 func (app *PipelinesFeedbackApp) Run() error {
+	logrus.SetLevel(logrus.InfoLevel)
 	if app.debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
