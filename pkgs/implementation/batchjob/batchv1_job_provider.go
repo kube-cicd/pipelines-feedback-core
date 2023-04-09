@@ -75,7 +75,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		startTime,
 		jobStatus,
 		[]contract.PipelineStage{
-			{Name: "Job", Status: jobStatus},
+			{Name: "job/" + job.Name, Status: jobStatus},
 		},
 		dashboardUrl,
 	)

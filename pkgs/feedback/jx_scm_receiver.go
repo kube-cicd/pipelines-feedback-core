@@ -15,6 +15,7 @@ import (
 
 const defaultProgressComment = `
 :rocket: The Pipeline {{ .pipeline.GetStatus.AsHumanReadableDescription }} {{ if .pipeline.GetStatus.IsNotStarted }}Not started{{ else if .pipeline.GetStatus.IsRunning }}:hourglass_flowing_sand:{{ else if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
+--------------------------------------
 
 | Stage | Status |
 |-------|--------|
@@ -24,7 +25,7 @@ const defaultProgressComment = `
 
 <details>
     <summary>Build</summary>
-    Build: {{ .buildId }}
+    id: {{ .buildId }}
 </details>
 `
 
@@ -39,8 +40,7 @@ type JXSCMReceiver struct {
 //
 // todo: check in cache if the last status == current status - if yes, then do not update twice
 func (jx *JXSCMReceiver) updatePRStatusComment(ctx context.Context, pipeline contract.PipelineInfo) error {
-	// :white_check_mark: / :x: / :hourglass_flowing_sand:
-	idPart := "(pfc-comment-id=" + pipeline.GetId() + ")"
+	idPart := "(pfc-id=" + pipeline.GetId() + ")"
 
 	if pipeline.GetSCMContext().PrId == "" {
 		return nil
