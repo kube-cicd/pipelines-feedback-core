@@ -29,6 +29,11 @@ const defaultProgressComment = `
 </details>
 `
 
+const defaultFinishedComment = `
+The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
+--------------------
+`
+
 type JXSCMReceiver struct {
 	client *scm.Client
 	sc     *wiring.ServiceContext
@@ -37,8 +42,6 @@ type JXSCMReceiver struct {
 // updatePRStatusComment is keeping the PR comment up-to-date with the detailed status of the Pipeline. The comment
 //
 //	will be created, and then edited multiple times
-//
-// todo: check in cache if the last status == current status - if yes, then do not update twice
 func (jx *JXSCMReceiver) updatePRStatusComment(ctx context.Context, pipeline contract.PipelineInfo) error {
 	idPart := "(pfc-id=" + pipeline.GetId() + ")"
 
@@ -116,10 +119,38 @@ func (jx *JXSCMReceiver) WhenStarted(ctx context.Context, pipeline contract.Pipe
 	return nil
 }
 
+// WhenFinished is creating a final comment on the PR to make sure user is notified about the final status
 func (jx *JXSCMReceiver) WhenFinished(ctx context.Context, pipeline contract.PipelineInfo) error {
+	// Skip if not in a PR context
+	if pipeline.GetSCMContext().PrId == "" {
+		return nil
+	}
+	prId, _ := strconv.Atoi(pipeline.GetSCMContext().PrId)
+
+	// Do not send the same comment twice
+	if jx.sc.Store.WasSummaryCommentCreated(pipeline) {
+		jx.sc.Log.Debugf("Skipping update, status already wrote to SCM for '%s'", pipeline.GetId())
+		return nil
+	}
+
+	// Template a comment body
+	content, tplErr := templating.TemplateSummaryComment(defaultFinishedComment, pipeline)
+	if tplErr != nil {
+		return errors.Wrap(tplErr, "cannot create a comment from template")
+	}
+
+	// Send comment to SCM
+	_, _, createErr := jx.client.PullRequests.CreateComment(ctx, pipeline.GetSCMContext().GetNameWithOrg(), prId, &scm.CommentInput{
+		Body: content,
+	})
+	if createErr != nil {
+		return errors.Wrap(createErr, "cannot create a comment on a Pull Request")
+	}
+	jx.sc.Store.RecordSummaryCommentCreated(pipeline)
 	return nil
 }
 
+// UpdateProgress is keeping commit & PR up-to-date with the progress by creating & updating statuses
 func (jx *JXSCMReceiver) UpdateProgress(ctx context.Context, pipeline contract.PipelineInfo) error {
 	jx.sc.Log.Infoln("JXSCMReceiver", pipeline)
 
@@ -128,14 +159,14 @@ func (jx *JXSCMReceiver) UpdateProgress(ctx context.Context, pipeline contract.P
 	overallStatus := jx.translateStatus(ourStatus)
 
 	var commitStatusErr error = nil
-	var prStatusErr error = nil
+	var prCommentStatusErr error = nil
 
 	if jx.client == nil {
 		return errors.New("jx.client is nil")
 	}
 
 	if commentStatusErr := jx.updatePRStatusComment(ctx, pipeline); commentStatusErr != nil {
-		return errors.Wrap(commentStatusErr, "cannot create/update status comment in Pull Request")
+		prCommentStatusErr = errors.Wrap(commentStatusErr, "cannot create/update status comment in Pull Request")
 	}
 
 	// Update commit status
@@ -152,18 +183,11 @@ func (jx *JXSCMReceiver) UpdateProgress(ctx context.Context, pipeline contract.P
 		jx.sc.Log.Warning("jx.client.Repositories is nil. No support for commit status update for this SCM provider in jx go-scm?")
 	}
 
-	// Pull/Merge Requests merge status
-	if jx.client.PullRequests != nil {
-		// todo: Update PR status. Make it not able to merge due to running Pipeline
-	} else {
-		jx.sc.Log.Warning("jx.client.PullRequests is nil. No support for manipulating Pull/Merge Requests for this SCM provider in jx go-scm? Cannot operate on Pull/Merge Requests")
-	}
-
 	if commitStatusErr != nil {
 		return commitStatusErr
 	}
-	if prStatusErr != nil {
-		return prStatusErr
+	if prCommentStatusErr != nil {
+		return prCommentStatusErr
 	}
 	return nil
 }

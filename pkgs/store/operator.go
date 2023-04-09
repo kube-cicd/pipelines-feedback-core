@@ -62,6 +62,15 @@ func (o *Operator) RecordInfoAboutLastComment(pipeline contract.PipelineInfo, co
 	_ = o.Set(pipeline.GetId()+"/PRLastStatus", string(pipeline.GetStatus()))
 }
 
+func (o *Operator) RecordSummaryCommentCreated(pipeline contract.PipelineInfo) {
+	_ = o.Set(pipeline.GetId()+"/PRSummaryCreated", "true")
+}
+
+func (o *Operator) WasSummaryCommentCreated(pipeline contract.PipelineInfo) bool {
+	value, _ := o.Get(pipeline.GetId() + "/PRSummaryCreated")
+	return value == "true"
+}
+
 func (o *Operator) readOrEmpty(pipeline contract.PipelineInfo, key string) string {
 	ident := pipeline.GetId() + "/" + key
 	existing, err := o.Get(ident)

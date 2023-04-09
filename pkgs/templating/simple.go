@@ -27,6 +27,12 @@ func TemplateProgressComment(templateStr string, pipeline contract.PipelineInfo,
 	})
 }
 
+func TemplateSummaryComment(templateStr string, pipeline contract.PipelineInfo) (string, error) {
+	return render(templateStr, "summary-comment-template", map[string]interface{}{
+		"pipeline": pipeline,
+	})
+}
+
 func render(templateStr string, name string, variables map[string]interface{}) (string, error) {
 	t, err := template.New(name).Parse(templateStr)
 	if err != nil {
