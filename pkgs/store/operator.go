@@ -14,7 +14,7 @@ type Operator struct {
 
 // CountHowManyTimesKubernetesResourceReceived returns count and increases the counter for given resource
 func (o *Operator) CountHowManyTimesKubernetesResourceReceived(retrieved *contract.PipelineInfo) int {
-	ident := retrieved.GetStoreId() + "/counter"
+	ident := retrieved.GetId() + "/counter"
 	existing, err := o.Get(ident)
 	counter := 0
 
@@ -33,7 +33,7 @@ func (o *Operator) CountHowManyTimesKubernetesResourceReceived(retrieved *contra
 }
 
 func (o *Operator) WasEventAlreadySent(retrieved contract.PipelineInfo, eventType string) bool {
-	ident := retrieved.GetStoreId() + "/" + eventType
+	ident := retrieved.GetId() + "/" + eventType
 	existing, err := o.Get(ident)
 	if err != nil && err.Error() == ErrNotFound {
 		return false
@@ -42,9 +42,31 @@ func (o *Operator) WasEventAlreadySent(retrieved contract.PipelineInfo, eventTyp
 }
 
 func (o *Operator) RecordEventFiring(retrieved contract.PipelineInfo, eventType string) error {
-	ident := retrieved.GetStoreId() + "/" + eventType
+	ident := retrieved.GetId() + "/" + eventType
 	if err := o.Set(ident, "true"); err != nil {
 		return errors.Wrap(err, "cannot store information, that event was already fired - RecordEventFiring()")
 	}
 	return nil
+}
+
+func (o *Operator) GetStatusPRCommentId(pipeline contract.PipelineInfo) string {
+	return o.readOrEmpty(pipeline, "PRCommentId")
+}
+
+func (o *Operator) GetLastRecordedPipelineStatus(pipeline contract.PipelineInfo) string {
+	return o.readOrEmpty(pipeline, "PRLastStatus")
+}
+
+func (o *Operator) RecordInfoAboutLastComment(pipeline contract.PipelineInfo, commentId string) {
+	_ = o.Set(pipeline.GetId()+"/PRCommentId", commentId)
+	_ = o.Set(pipeline.GetId()+"/PRLastStatus", string(pipeline.GetStatus()))
+}
+
+func (o *Operator) readOrEmpty(pipeline contract.PipelineInfo, key string) string {
+	ident := pipeline.GetId() + "/" + key
+	existing, err := o.Get(ident)
+	if err != nil && err.Error() == ErrNotFound {
+		return ""
+	}
+	return existing
 }

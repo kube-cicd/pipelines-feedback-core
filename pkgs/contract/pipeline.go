@@ -21,13 +21,18 @@ type PipelineInfo struct {
 	retrievalNum int
 }
 
-func (pi PipelineInfo) GetStoreId() string {
+func (pi PipelineInfo) GetId() string {
 	return pi.namespace + "/" + pi.name + "/" + pi.instanceName
 }
 
 // IsJustCreated tells us if the resource was retrieved from the cluster first time
 func (pi PipelineInfo) IsJustCreated() bool {
 	return pi.retrievalNum < 2
+}
+
+// GetStages returns a stage list with statuses for each
+func (pi PipelineInfo) GetStages() []PipelineStage {
+	return pi.stages
 }
 
 func (pi PipelineInfo) GetSCMContext() SCMContext {
@@ -118,6 +123,18 @@ func (s Status) IsFinished() bool {
 
 func (s Status) IsRunning() bool {
 	return s == Running
+}
+
+func (s Status) IsErroredOrFailed() bool {
+	return s == Failed || s == Errored
+}
+
+func (s Status) IsSucceeded() bool {
+	return s == Succeeded
+}
+
+func (s Status) IsNotStarted() bool {
+	return s != Running && s != Failed && s != Errored && s != Succeeded
 }
 
 func (s Status) AsHumanReadableDescription() string {

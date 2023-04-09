@@ -73,14 +73,14 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 // updateProgress decides when to trigger notification events to the RECEIVER
 func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger *logrus.Entry) error {
 	// Always update progress
-	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetStoreId())
+	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetId())
 	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved); upErr != nil {
 		return upErr
 	}
 
 	// Single-time events
 	if retrieved.IsJustCreated() && !retrieved.GetStatus().IsFinished() && !gc.Store.WasEventAlreadySent(retrieved, "created") {
-		logger.Debugf("GenericController -> WhenCreated(%s)", retrieved.GetStoreId())
+		logger.Debugf("GenericController -> WhenCreated(%s)", retrieved.GetId())
 		if createErr := gc.FeedbackReceiver.WhenCreated(ctx, retrieved); createErr != nil {
 			return createErr
 		}
@@ -89,7 +89,7 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 		}
 	}
 	if retrieved.GetStatus().IsRunning() && !gc.Store.WasEventAlreadySent(retrieved, "started") {
-		logger.Debugf("GenericController -> WhenStarted(%s)", retrieved.GetStoreId())
+		logger.Debugf("GenericController -> WhenStarted(%s)", retrieved.GetId())
 		if startErr := gc.FeedbackReceiver.WhenStarted(ctx, retrieved); startErr != nil {
 			return startErr
 		}
@@ -98,7 +98,7 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 		}
 	}
 	if retrieved.GetStatus().IsFinished() && !gc.Store.WasEventAlreadySent(retrieved, "finished") {
-		logger.Debugf("GenericController -> WhenFinished(%s)", retrieved.GetStoreId())
+		logger.Debugf("GenericController -> WhenFinished(%s)", retrieved.GetId())
 		if finishErr := gc.FeedbackReceiver.WhenFinished(ctx, retrieved); finishErr != nil {
 			return finishErr
 		}
