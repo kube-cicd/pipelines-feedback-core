@@ -152,8 +152,6 @@ func (jx *JXSCMReceiver) WhenFinished(ctx context.Context, pipeline contract.Pip
 
 // UpdateProgress is keeping commit & PR up-to-date with the progress by creating & updating statuses
 func (jx *JXSCMReceiver) UpdateProgress(ctx context.Context, pipeline contract.PipelineInfo) error {
-	jx.sc.Log.Infoln("JXSCMReceiver", pipeline)
-
 	scmCtx := pipeline.GetSCMContext()
 	ourStatus := pipeline.GetStatus()
 	overallStatus := jx.translateStatus(ourStatus)
