@@ -59,6 +59,12 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, errors.Wrap(retrieveErr, "cannot receive Pipeline status")
 	}
 
+	// record how many times an object was reconciled
+	// this info is later used to send update or not
+	eventNum := gc.Store.CountHowManyTimesKubernetesResourceReceived(&retrieved)
+	logger.Debugf("count(%s) = %v", req.Name, eventNum)
+	retrieved.SetRetrievalCount(eventNum)
+
 	//
 	// Notify the Feedback Receiver
 	//

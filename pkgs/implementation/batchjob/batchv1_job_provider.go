@@ -79,9 +79,6 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		},
 		dashboardUrl,
 	)
-	eventNum := bjp.store.CountHowManyTimesKubernetesResourceReceived(pi)
-	bjp.logger.Debugf("count(%s) = %v", job.Name, eventNum)
-	pi.SetRetrievalCount(eventNum)
 
 	return *pi, nil
 }
