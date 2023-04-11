@@ -16,3 +16,7 @@ func (lf *LocalFileConfigurationProvider) InjectDependencies(recorder record.Eve
 func (lf *LocalFileConfigurationProvider) Provide(info contract.PipelineInfo) Configuration {
 	return Configuration{}
 }
+
+func (lf *LocalFileConfigurationProvider) CanHandle(adapterName string) bool {
+	return adapterName == "local"
+}

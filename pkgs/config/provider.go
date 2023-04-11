@@ -5,6 +5,7 @@ import (
 )
 
 type ConfigurationProvider interface {
+	contract.Pluggable
 	Provide(info contract.PipelineInfo) Configuration
 }
 

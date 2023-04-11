@@ -30,30 +30,12 @@ type PipelinesFeedbackApp struct {
 
 	CustomFeedbackReceiver string
 	CustomConfigProvider   string
-}
 
-// todo: self registration
-func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
-	if app.CustomFeedbackReceiver == "" {
-		return nil
-	}
-	if app.CustomFeedbackReceiver == "jxscm" {
-		app.JobController.FeedbackReceiver = &feedback.JXSCMReceiver{}
-		return nil
-	}
-	return errors.New("unrecognized FeedbackProvider")
-}
+	// Feedback receivers available to choose by the user. Falls back to default, embedded list if not specified
+	AvailableFeedbackReceivers []feedback.Receiver
 
-// todo: self registration
-func (app *PipelinesFeedbackApp) populateConfigProvider() error {
-	if app.CustomConfigProvider == "" {
-		return nil
-	}
-	if app.CustomConfigProvider == "local" {
-		app.JobController.ConfigProvider = &config.LocalFileConfigurationProvider{}
-		return nil
-	}
-	return errors.New("unrecognized ConfigProvider")
+	// Config providers available to choose by the user. Falls back to default, embedded list if not specified
+	AvailableConfigProviders []config.ConfigurationProvider
 }
 
 func (app *PipelinesFeedbackApp) Run() error {
@@ -116,6 +98,46 @@ func (app *PipelinesFeedbackApp) Run() error {
 		return err
 	}
 	return nil
+}
+
+func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
+	//
+	// The mechanism allows to register multiple options and let the user to chose one option
+	//
+
+	if app.CustomFeedbackReceiver == "" {
+		return nil
+	}
+	if app.AvailableFeedbackReceivers == nil {
+		app.AvailableFeedbackReceivers = []feedback.Receiver{
+			&feedback.JXSCMReceiver{},
+		}
+	}
+	for _, pluggable := range app.AvailableFeedbackReceivers {
+		if pluggable.CanHandle(app.CustomFeedbackReceiver) {
+			app.JobController.FeedbackReceiver = pluggable
+			return nil
+		}
+	}
+	return errors.New("unrecognized FeedbackProvider")
+}
+
+func (app *PipelinesFeedbackApp) populateConfigProvider() error {
+	if app.CustomConfigProvider == "" {
+		return nil
+	}
+	if app.AvailableFeedbackReceivers == nil {
+		app.AvailableConfigProviders = []config.ConfigurationProvider{
+			&config.LocalFileConfigurationProvider{},
+		}
+	}
+	for _, pluggable := range app.AvailableConfigProviders {
+		if pluggable.CanHandle(app.CustomConfigProvider) {
+			app.JobController.ConfigProvider = pluggable
+			return nil
+		}
+	}
+	return errors.New("unrecognized ConfigProvider")
 }
 
 func createKubeConfiguration(kubeconfig string) (*rest.Config, error) {

@@ -7,6 +7,7 @@ import (
 
 // Receiver is a side that receives the update about the Pipeline status. It may be a Gitea, Gitlab, GitHub or other
 type Receiver interface {
+	contract.Pluggable
 
 	// UpdateProgress is called each time a status is changed
 	UpdateProgress(ctx context.Context, status contract.PipelineInfo) error

@@ -206,3 +206,7 @@ func (jx *JXSCMReceiver) translateStatus(status contract.Status) scm.State {
 		return scm.StateUnknown
 	}
 }
+
+func (jx *JXSCMReceiver) CanHandle(name string) bool {
+	return name == "jxscm"
+}
