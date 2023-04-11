@@ -10,7 +10,7 @@ build: fmt vet ## Build manager binary.
 	go build -o $(LOCALBIN)/batchv1-controller main.go
 
 run:
-	./.build/batchv1-controller
+	./.build/batchv1-controller --debug
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.

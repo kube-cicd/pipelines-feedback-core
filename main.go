@@ -8,7 +8,7 @@ import (
 
 func main() {
 	app := cli.PipelinesFeedbackApp{
-		Controller: batchjob.CreateJobController(),
+		JobController: batchjob.CreateJobController(),
 	}
 	cmd := cli.NewRootCommand(&app)
 	args := os.Args
