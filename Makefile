@@ -23,3 +23,18 @@ vet: ## Run go vet against code.
 LOCALBIN ?= $(shell pwd)/.build
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
+
+CONTROLLER_GEN := $(GOPATH)/bin/controller-gen
+$(CONTROLLER_GEN):
+	pushd /tmp; $(GO) install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.11.3; popd
+
+crd-manifests: $(CONTROLLER_GEN)
+	$(CONTROLLER_GEN) crd:maxDescLen=0 paths="./pkgs/apis/pipelines-feedback.keskad.pl/v1alpha1/..." output:crd:artifacts:config=crds
+
+.PHONY: generate
+generate: $(CONTROLLER_GEN) ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./pkgs/apis/pipelines-feedback.keskad.pl/v1alpha1/..."
+
+codegen-clientset:
+	@echo "Generating Kubernetes Clients"
+	./hack/update-codegen.sh
