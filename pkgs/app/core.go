@@ -1,6 +1,7 @@
 package app
 
 import (
+	pipelinesfeedbackv1alpha1scheme "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/scheme"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/controller"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
@@ -23,6 +24,7 @@ var (
 
 type PipelinesFeedbackApp struct {
 	JobController          *controller.GenericController
+	ConfigController       *controller.ConfigurationController
 	Debug                  bool
 	MetricsBindAddress     string
 	HealthProbeBindAddress string
@@ -50,8 +52,9 @@ func (app *PipelinesFeedbackApp) Run() error {
 		return err
 	}
 
-	// add a standard scheme
+	// add a standard scheme and Pipelines Feedback Core CRDs
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(pipelinesfeedbackv1alpha1scheme.AddToScheme(scheme))
 	// todo: add custom scheme
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
@@ -79,7 +82,12 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	if err = app.JobController.SetupWithManager(mgr); err != nil {
-		appLog.Error(err, "unable to setup controller", "controller")
+		appLog.Error(err, "unable to setup job controller", "controller")
+		return err
+	}
+
+	if err = app.ConfigController.SetupWithManager(mgr); err != nil {
+		appLog.Error(err, "unable to setup configuration controller", "config")
 		return err
 	}
 
@@ -126,7 +134,7 @@ func (app *PipelinesFeedbackApp) populateConfigProvider() error {
 	if app.CustomConfigProvider == "" {
 		return nil
 	}
-	if app.AvailableFeedbackReceivers == nil {
+	if app.AvailableConfigProviders == nil {
 		app.AvailableConfigProviders = []config.ConfigurationProvider{
 			&config.LocalFileConfigurationProvider{},
 		}
@@ -137,7 +145,7 @@ func (app *PipelinesFeedbackApp) populateConfigProvider() error {
 			return nil
 		}
 	}
-	return errors.New("unrecognized ConfigProvider")
+	return errors.New("unrecognized ConfigProvider: " + app.CustomConfigProvider)
 }
 
 func createKubeConfiguration(kubeconfig string) (*rest.Config, error) {

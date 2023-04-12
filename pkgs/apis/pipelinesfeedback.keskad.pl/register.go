@@ -1,7 +1,7 @@
 package pipelinesfeedbackkeskadpl
 
 const (
-	GroupName       = "pipelines-feedback.keskad.pl"
+	GroupName       = "pipelinesfeedback.keskad.pl"
 	Version         = "v1alpha1"
 	GroupAndVersion = GroupName + "/" + Version
 )

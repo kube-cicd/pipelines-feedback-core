@@ -18,5 +18,9 @@ func (lf *LocalFileConfigurationProvider) Provide(info contract.PipelineInfo) Co
 }
 
 func (lf *LocalFileConfigurationProvider) CanHandle(adapterName string) bool {
-	return adapterName == "local"
+	return adapterName == lf.GetImplementationName()
+}
+
+func (lf *LocalFileConfigurationProvider) GetImplementationName() string {
+	return "local"
 }

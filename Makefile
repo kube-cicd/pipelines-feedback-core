@@ -29,11 +29,10 @@ $(CONTROLLER_GEN):
 	pushd /tmp; $(GO) install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.11.3; popd
 
 crd-manifests: $(CONTROLLER_GEN)
-	$(CONTROLLER_GEN) crd:maxDescLen=0 paths="./pkgs/apis/pipelines-feedback.keskad.pl/v1alpha1/..." output:crd:artifacts:config=crds
+	$(CONTROLLER_GEN) crd:maxDescLen=0 paths="./pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1/..." output:crd:artifacts:config=crds
 
 .PHONY: generate
-generate: $(CONTROLLER_GEN) ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./pkgs/apis/pipelines-feedback.keskad.pl/v1alpha1/..."
+generate: $(CONTROLLER_GEN) codegen-clientset crd-manifests
 
 codegen-clientset:
 	@echo "Generating Kubernetes Clients"

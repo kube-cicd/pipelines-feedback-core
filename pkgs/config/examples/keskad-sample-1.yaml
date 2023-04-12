@@ -1,0 +1,9 @@
+---
+apiVersion: pipelinesfeedback.keskad.pl/v1alpha1
+kind: PFConfig
+metadata:
+    name: keskad-sample-1
+spec:
+    jobDiscovery: {}
+data:
+    jxscm.token-secret-name: "some-secret"

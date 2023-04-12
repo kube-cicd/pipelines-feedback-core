@@ -3,6 +3,7 @@ package cli
 import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/app"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
@@ -17,12 +18,27 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	app.CustomFeedbackReceiver = ""
 	app.CustomConfigProvider = ""
 
-	// FeedbackReceiver and ConfigProvider could be enforced by the controller. When it is not enforced then the user can select an implementation
+	//
+	// FeedbackReceiver and ConfigProvider can be enforced by the controller.
+	// When it is not enforced, then the user can select an implementation
+	//
 	if app.JobController.FeedbackReceiver == nil {
-		command.Flags().StringVarP(&app.CustomFeedbackReceiver, "feedback-receiver", "f", "jxscm", "Sets a FeedbackReceiver (possible options: jxscm)")
+		available := ""
+		if app.AvailableFeedbackReceivers != nil {
+			for _, option := range app.AvailableFeedbackReceivers {
+				available += option.GetImplementationName() + ", "
+			}
+		}
+		command.Flags().StringVarP(&app.CustomFeedbackReceiver, "feedback-receiver", "f", "jxscm", "Sets a FeedbackReceiver (possible options: "+strings.TrimRight(available, ", ")+")")
 	}
 	if app.JobController.ConfigProvider == nil {
-		command.Flags().StringVarP(&app.CustomConfigProvider, "config-provider", "c", "local", "Sets a ConfigProvider (possible options: local)")
+		available := ""
+		if app.AvailableConfigProviders != nil {
+			for _, option := range app.AvailableConfigProviders {
+				available += option.GetImplementationName() + ", "
+			}
+		}
+		command.Flags().StringVarP(&app.CustomConfigProvider, "config-provider", "c", "local", "Sets a ConfigProvider (possible options: "+strings.TrimRight(available, ", ")+" - possible to set multiple, comma separated, without spaces)")
 	}
 
 	command.Flags().BoolVarP(&app.Debug, "debug", "v", false, "Increase verbosity to the debug level")

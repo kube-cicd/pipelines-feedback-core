@@ -34,6 +34,8 @@ The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.Ge
 --------------------
 `
 
+// todo: automatically add <details> section
+
 type JXSCMReceiver struct {
 	client *scm.Client
 	sc     *wiring.ServiceContext
@@ -208,5 +210,9 @@ func (jx *JXSCMReceiver) translateStatus(status contract.Status) scm.State {
 }
 
 func (jx *JXSCMReceiver) CanHandle(name string) bool {
-	return name == "jxscm"
+	return name == jx.GetImplementationName()
+}
+
+func (jx *JXSCMReceiver) GetImplementationName() string {
+	return "jxscm"
 }
