@@ -78,14 +78,17 @@ func (app *PipelinesFeedbackApp) Run() error {
 
 	// dependencies
 	if err := app.JobController.InjectDependencies(recorder, kubeconfig); err != nil {
-		return errors.Wrap(err, "cannot inject dependencies")
+		return errors.Wrap(err, "cannot inject dependencies to GenericController")
+	}
+	if err := app.ConfigController.Initialize(kubeconfig); err != nil {
+		return errors.Wrap(err, "cannot push dependencies to ConfigurationController")
 	}
 
+	// register controllers
 	if err = app.JobController.SetupWithManager(mgr); err != nil {
 		appLog.Error(err, "unable to setup job controller", "controller")
 		return err
 	}
-
 	if err = app.ConfigController.SetupWithManager(mgr); err != nil {
 		appLog.Error(err, "unable to setup configuration controller", "config")
 		return err

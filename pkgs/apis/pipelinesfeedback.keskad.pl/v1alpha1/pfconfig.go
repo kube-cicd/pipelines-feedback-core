@@ -19,6 +19,10 @@ type PFConfig struct {
 	Status PFCStatus `json:"status,omitempty"`
 }
 
+func (pfc *PFConfig) IsGlobalConfiguration() bool {
+	return pfc.Namespace == ""
+}
+
 // NewPFConfig is making a new instance of a resource making sure that defaults will be respected
 func NewPFConfig() PFConfig {
 	return PFConfig{
