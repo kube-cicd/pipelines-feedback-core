@@ -1,0 +1,69 @@
+package v1alpha1
+
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:shortName=pfc
+
+// +kubebuilder:subresource:status
+type PFConfig struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   Spec      `json:"spec"`
+	Data   Data      `json:"data"`
+	Status PFCStatus `json:"status,omitempty"`
+}
+
+func (pfc *PFConfig) IsGlobalConfiguration() bool {
+	return pfc.Namespace == ""
+}
+
+// NewPFConfig is making a new instance of a resource making sure that defaults will be respected
+func NewPFConfig() PFConfig {
+	return PFConfig{
+		Spec: Spec{
+			JobDiscovery: JobDiscovery{
+				LabelSelector: &metav1.LabelSelector{
+					MatchLabels:      map[string]string{},
+					MatchExpressions: []metav1.LabelSelectorRequirement{},
+				},
+			},
+		},
+		Data:   Data{},
+		Status: PFCStatus{},
+	}
+}
+
+// Spec represents .spec
+type Spec struct {
+	JobDiscovery JobDiscovery `json:"jobDiscovery"`
+}
+
+// JobDiscovery represents .spec.jobDiscovery
+type JobDiscovery struct {
+	// .spec.jobDiscovery.labelSelector
+	LabelSelector *metav1.LabelSelector `json:"labelSelector,omitempty"`
+}
+
+// Data represents similar field like "data" in ConfigMap, a simple key-value store
+// with a convention of lowercase entries with dots as groups e.g. `scm.token-secret-name: "my-secret"`
+type Data map[string]string
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:object:root=true
+
+// PFConfigList represents a list
+type PFConfigList struct {
+	metav1.TypeMeta `json:",inline"`
+	// +optional
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []PFConfig `json:"items"`
+}
+
+type PFCStatus struct {
+}

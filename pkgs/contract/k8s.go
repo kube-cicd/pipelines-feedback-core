@@ -3,8 +3,8 @@ package contract
 type PipelineAnnotation string
 
 const (
-	AnnotationPrId       = "pipelines-feedback.keskad.pl/pr-id"
-	AnnotationCommitHash = "pipelines-feedback.keskad.pl/commit"
-	AnnotationHttpsRepo  = "pipelines-feedback.keskad.pl/https-repo-url"
-	AnnotationReference  = "pipelines-feedback.keskad.pl/ref"
+	AnnotationPrId       = "pipelinesfeedback.keskad.pl/pr-id"
+	AnnotationCommitHash = "pipelinesfeedback.keskad.pl/commit"
+	AnnotationHttpsRepo  = "pipelinesfeedback.keskad.pl/https-repo-url"
+	AnnotationReference  = "pipelinesfeedback.keskad.pl/ref"
 )

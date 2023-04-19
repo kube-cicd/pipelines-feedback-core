@@ -1,0 +1,49 @@
+package controller
+
+import (
+	"context"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	v1alpha1_client "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned"
+	v1alpha12 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/typed/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
+	ctrl "sigs.k8s.io/controller-runtime"
+)
+
+// ConfigurationController is reconciling CRD that provides configuration
+type ConfigurationController struct {
+	docs   config.DocumentStore
+	client v1alpha12.PipelinesfeedbackV1alpha1Interface
+}
+
+func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config) error {
+	client, err := v1alpha1_client.NewForConfig(kubeConfig)
+	if err != nil {
+		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
+	}
+	logrus.Info("!!!!!!", client.PipelinesfeedbackV1alpha1())
+	cc.client = client.PipelinesfeedbackV1alpha1()
+	logrus.Info("??????????????????")
+	return nil
+}
+
+func (cc *ConfigurationController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	cfg, err := cc.client.PFConfigs(req.Namespace).Get(ctx, req.Name, v1.GetOptions{})
+	if err != nil {
+		// not found anymore?
+		cc.docs.Delete(req.Namespace, req.Name)
+		return ctrl.Result{}, err
+	}
+	cc.docs.Push(cfg)
+
+	return ctrl.Result{}, nil
+}
+
+func (cc *ConfigurationController) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&v1alpha1.PFConfig{}).
+		Complete(cc)
+}
