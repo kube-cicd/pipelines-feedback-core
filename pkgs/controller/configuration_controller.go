@@ -4,10 +4,9 @@ import (
 	"context"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	v1alpha1_client "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned"
-	v1alpha12 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/typed/pipelinesfeedback.keskad.pl/v1alpha1"
+	pipelinesfeedbackv1alpha1 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/typed/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -16,7 +15,7 @@ import (
 // ConfigurationController is reconciling CRD that provides configuration
 type ConfigurationController struct {
 	docs   config.DocumentStore
-	client v1alpha12.PipelinesfeedbackV1alpha1Interface
+	client pipelinesfeedbackv1alpha1.PipelinesfeedbackV1alpha1Interface
 }
 
 func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config) error {
@@ -24,9 +23,7 @@ func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config) error {
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
 	}
-	logrus.Info("!!!!!!", client.PipelinesfeedbackV1alpha1())
 	cc.client = client.PipelinesfeedbackV1alpha1()
-	logrus.Info("??????????????????")
 	return nil
 }
 
