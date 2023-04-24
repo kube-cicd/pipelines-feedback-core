@@ -15,7 +15,7 @@ type WithInitialization interface {
 type ServiceContext struct {
 	Recorder   *record.EventRecorder
 	KubeConfig *rest.Config
-	Config     config.ConfigurationProvider
+	Config     config.ConfigurationCollector
 	Log        *logrus.Entry
 	Store      *store.Operator
 }

@@ -28,10 +28,7 @@ func NewPFConfig() PFConfig {
 	return PFConfig{
 		Spec: Spec{
 			JobDiscovery: JobDiscovery{
-				LabelSelector: &metav1.LabelSelector{
-					MatchLabels:      map[string]string{},
-					MatchExpressions: []metav1.LabelSelectorRequirement{},
-				},
+				LabelSelector: []metav1.LabelSelector{},
 			},
 		},
 		Data:   Data{},
@@ -47,7 +44,7 @@ type Spec struct {
 // JobDiscovery represents .spec.jobDiscovery
 type JobDiscovery struct {
 	// .spec.jobDiscovery.labelSelector
-	LabelSelector *metav1.LabelSelector `json:"labelSelector,omitempty"`
+	LabelSelector []metav1.LabelSelector `json:"labelSelector,omitempty"`
 }
 
 // Data represents similar field like "data" in ConfigMap, a simple key-value store

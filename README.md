@@ -13,6 +13,22 @@ There are **Feedback receivers**, **Feedback providers** and **Configuration pro
 - localfile (read configuration from local YAML)
 - annotation (read from Kubernetes annotations)
 
+Roadmap
+-------
+
+**First beta release:**
+- [x] Reference implementation implementing `kind: Job` support
+- [ ] Modular architecture (pluggable: `config`, `receiver`, `provider`, `store`)
+- [ ] Split on `pkgs` and `internal` to hide internally used methods
+- [ ] Configuration as CRD and as local file, inherited and merged
+
+**First stable release:**
+- [ ] Freeze the API (in the code as well as in CRD)
+- [ ] Document the API
+
+**Next:**
+- [ ] WebAssembly support to write Feedback receivers in language of choice
+
 Framework
 ---------
 

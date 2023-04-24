@@ -53,8 +53,10 @@ func (in *JobDiscovery) DeepCopyInto(out *JobDiscovery) {
 	*out = *in
 	if in.LabelSelector != nil {
 		in, out := &in.LabelSelector, &out.LabelSelector
-		*out = new(v1.LabelSelector)
-		(*in).DeepCopyInto(*out)
+		*out = make([]v1.LabelSelector, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 	return
 }

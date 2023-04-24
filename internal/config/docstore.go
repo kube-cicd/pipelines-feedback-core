@@ -2,6 +2,11 @@ package config
 
 import "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 
+// DocumentStore is a storage for configuration files structured as CRD
+//
+//	Every PFConfig document has meta attributes like Job selector, namespace
+//	so a ConfigurationService can serve a contextual documentation - in context of a Job
+//	or in global context.
 type DocumentStore struct {
 	namespaces map[string]NamespacedDocuments
 	global     map[string]*v1alpha1.PFConfig

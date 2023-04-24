@@ -31,7 +31,7 @@ type GenericController struct {
 	FeedbackReceiver feedback.Receiver
 
 	// can read configuration from various sources
-	ConfigProvider config.ConfigurationProvider
+	ConfigCollector config.ConfigurationCollector
 
 	// simple key-value store
 	Store store.Operator
@@ -133,18 +133,18 @@ func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, k
 	sc := wiring.ServiceContext{
 		Recorder:   &recorder,
 		KubeConfig: kubeConfig,
-		Config:     gc.ConfigProvider,
-		Log:        logrus.WithFields(map[string]interface{}{}),
-		Store:      &gc.Store,
+		//Config:     gc.ConfigCollector,
+		Log:   logrus.WithFields(map[string]interface{}{}),
+		Store: &gc.Store,
 	}
 	nErr := func(name string, err error) error {
 		return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
 	}
-	if _, ok := gc.ConfigProvider.(wiring.WithInitialization); ok {
-		if err := gc.ConfigProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-			return nErr("ConfigProvider", err)
-		}
-	}
+	//if _, ok := gc.ConfigCollector.(wiring.WithInitialization); ok {
+	//	if err := gc.ConfigCollector.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
+	//		return nErr("ConfigCollector", err)
+	//	}
+	//}
 	if _, ok := gc.PipelineInfoProvider.(wiring.WithInitialization); ok {
 		if err := gc.PipelineInfoProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
 			return nErr("PipelineInfoProvider", err)

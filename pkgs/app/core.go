@@ -37,7 +37,7 @@ type PipelinesFeedbackApp struct {
 	AvailableFeedbackReceivers []feedback.Receiver
 
 	// Config providers available to choose by the user. Falls back to default, embedded list if not specified
-	AvailableConfigProviders []config.ConfigurationProvider
+	AvailableConfigProviders []config.ConfigurationCollector
 }
 
 func (app *PipelinesFeedbackApp) Run() error {
@@ -80,7 +80,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 	if err := app.JobController.InjectDependencies(recorder, kubeconfig); err != nil {
 		return errors.Wrap(err, "cannot inject dependencies to GenericController")
 	}
-	if err := app.ConfigController.Initialize(kubeconfig); err != nil {
+	if err := app.ConfigController.Initialize(kubeconfig, app.JobController.ConfigCollector); err != nil {
 		return errors.Wrap(err, "cannot push dependencies to ConfigurationController")
 	}
 
@@ -138,17 +138,20 @@ func (app *PipelinesFeedbackApp) populateConfigProvider() error {
 		return nil
 	}
 	if app.AvailableConfigProviders == nil {
-		app.AvailableConfigProviders = []config.ConfigurationProvider{
-			&config.LocalFileConfigurationProvider{},
+		app.AvailableConfigProviders = []config.ConfigurationCollector{
+			&config.LocalFileConfigurationCollector{},
 		}
 	}
+	collectors := make([]config.ConfigurationCollector, 0)
 	for _, pluggable := range app.AvailableConfigProviders {
 		if pluggable.CanHandle(app.CustomConfigProvider) {
-			app.JobController.ConfigProvider = pluggable
+			collectors = append(collectors, pluggable)
 			return nil
 		}
 	}
-	return errors.New("unrecognized ConfigProvider: " + app.CustomConfigProvider)
+	app.JobController.ConfigCollector = config.CreateMultipleCollector(collectors)
+
+	return errors.New("unrecognized ConfigProviders: " + app.CustomConfigProvider)
 }
 
 func createKubeConfiguration(kubeconfig string) (*rest.Config, error) {

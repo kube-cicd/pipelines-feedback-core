@@ -1,0 +1,12 @@
+package config
+
+import (
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+)
+
+type ConfigurationCollector interface {
+	contract.Pluggable
+	CollectInitially() ([]*v1alpha1.PFConfig, error)
+	CollectOnRequest(info contract.PipelineInfo) ([]*v1alpha1.PFConfig, error)
+}

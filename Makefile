@@ -26,7 +26,7 @@ $(LOCALBIN):
 
 CONTROLLER_GEN := $(GOPATH)/bin/controller-gen
 $(CONTROLLER_GEN):
-	pushd /tmp; $(GO) install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.11.3; popd
+	pushd /tmp; go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.11.3; popd
 
 crd-manifests: $(CONTROLLER_GEN)
 	$(CONTROLLER_GEN) crd:maxDescLen=0 paths="./pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1/..." output:crd:artifacts:config=crds

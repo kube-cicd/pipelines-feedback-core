@@ -19,7 +19,7 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	app.CustomConfigProvider = ""
 
 	//
-	// FeedbackReceiver and ConfigProvider can be enforced by the controller.
+	// FeedbackReceiver and ConfigCollector can be enforced by the controller.
 	// When it is not enforced, then the user can select an implementation
 	//
 	if app.JobController.FeedbackReceiver == nil {
@@ -31,14 +31,14 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 		}
 		command.Flags().StringVarP(&app.CustomFeedbackReceiver, "feedback-receiver", "f", "jxscm", "Sets a FeedbackReceiver (possible options: "+strings.TrimRight(available, ", ")+")")
 	}
-	if app.JobController.ConfigProvider == nil {
+	if app.JobController.ConfigCollector == nil {
 		available := ""
 		if app.AvailableConfigProviders != nil {
 			for _, option := range app.AvailableConfigProviders {
 				available += option.GetImplementationName() + ", "
 			}
 		}
-		command.Flags().StringVarP(&app.CustomConfigProvider, "config-provider", "c", "local", "Sets a ConfigProvider (possible options: "+strings.TrimRight(available, ", ")+" - possible to set multiple, comma separated, without spaces)")
+		command.Flags().StringVarP(&app.CustomConfigProvider, "config-provider", "c", "local", "Sets a ConfigCollector (possible options: "+strings.TrimRight(available, ", ")+" - possible to set multiple, comma separated, without spaces)")
 	}
 
 	command.Flags().BoolVarP(&app.Debug, "debug", "v", false, "Increase verbosity to the debug level")
