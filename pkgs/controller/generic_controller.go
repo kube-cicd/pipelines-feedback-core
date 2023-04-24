@@ -3,10 +3,10 @@ package controller
 import (
 	"context"
 	"fmt"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 	"github.com/google/uuid"
@@ -30,19 +30,18 @@ type GenericController struct {
 	// e.g. a Gitlab, Gitea, Bitbucket, MS Teams, etc.
 	FeedbackReceiver feedback.Receiver
 
-	// can read configuration from various sources
-	ConfigCollector config.ConfigurationCollector
-
 	// simple key-value store
 	Store store.Operator
 
 	recorder record.EventRecorder
 
 	kubeConfig *rest.Config
+
+	logger logging.Logger
 }
 
 func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := createLogger(ctx, req)
+	logger := logging.CreateK8sContextualLogger(ctx, req)
 
 	//
 	// Fetch the object from PipelineInfoProvider
@@ -77,7 +76,7 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // updateProgress decides when to trigger notification events to the RECEIVER
-func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger *logrus.Entry) error {
+func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger logging.Logger) error {
 	// Always update progress
 	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetId())
 	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved); upErr != nil {
@@ -127,24 +126,25 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // InjectDependencies is wiring dependencies to all services
-func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config) error {
+func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config, logger logging.Logger) error {
 	gc.recorder = recorder
 	gc.kubeConfig = kubeConfig
+	gc.logger = logger
 	sc := wiring.ServiceContext{
 		Recorder:   &recorder,
 		KubeConfig: kubeConfig,
-		//Config:     gc.ConfigCollector,
+		// Config:     gc.ConfigCollector,
 		Log:   logrus.WithFields(map[string]interface{}{}),
 		Store: &gc.Store,
 	}
 	nErr := func(name string, err error) error {
 		return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
 	}
-	//if _, ok := gc.ConfigCollector.(wiring.WithInitialization); ok {
+	// if _, ok := gc.ConfigCollector.(wiring.WithInitialization); ok {
 	//	if err := gc.ConfigCollector.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
 	//		return nErr("ConfigCollector", err)
 	//	}
-	//}
+	// }
 	if _, ok := gc.PipelineInfoProvider.(wiring.WithInitialization); ok {
 		if err := gc.PipelineInfoProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
 			return nErr("PipelineInfoProvider", err)

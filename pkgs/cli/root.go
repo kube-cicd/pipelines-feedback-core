@@ -31,7 +31,7 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 		}
 		command.Flags().StringVarP(&app.CustomFeedbackReceiver, "feedback-receiver", "f", "jxscm", "Sets a FeedbackReceiver (possible options: "+strings.TrimRight(available, ", ")+")")
 	}
-	if app.JobController.ConfigCollector == nil {
+	if app.ConfigCollector == nil {
 		available := ""
 		if app.AvailableConfigProviders != nil {
 			for _, option := range app.AvailableConfigProviders {

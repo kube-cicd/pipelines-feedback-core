@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
 )
 
@@ -13,6 +14,11 @@ func CreateMultipleCollector(collectors []ConfigurationCollector) *MultipleColle
 // MultipleCollector is an adapter of adapters pattern that lets you use multiple configuration sources at a single time
 type MultipleCollector struct {
 	collectors []ConfigurationCollector
+	logger     logging.Logger
+}
+
+func (mc *MultipleCollector) SetLogger(logger logging.Logger) {
+	mc.logger = logger
 }
 
 func (mc *MultipleCollector) CanHandle(adapterName string) bool {

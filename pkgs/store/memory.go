@@ -2,7 +2,6 @@ package store
 
 import (
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 type Memory struct {
@@ -10,7 +9,6 @@ type Memory struct {
 }
 
 func (m *Memory) Set(key, value string) error {
-	logrus.Debugf("set(%s, %s)", key, value)
 	m.mem[key] = value
 	return nil
 }

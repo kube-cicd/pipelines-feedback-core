@@ -101,7 +101,7 @@ func (jx *JXSCMReceiver) updatePRStatusComment(ctx context.Context, pipeline con
 }
 
 func (jx *JXSCMReceiver) InitializeWithContext(sc *wiring.ServiceContext) error {
-	sc.Log.Infoln("Initializing JXSCMReceiver")
+	sc.Log.Info("Initializing JXSCMReceiver")
 
 	client, err := factory.NewClientFromEnvironment()
 	jx.client = client

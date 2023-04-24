@@ -5,11 +5,11 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/k8s"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	v1model "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
@@ -20,7 +20,7 @@ import (
 type BatchV1JobProvider struct {
 	client *v1.BatchV1Client
 	store  *store.Operator
-	logger *logrus.Entry
+	logger logging.Logger
 }
 
 func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) error {

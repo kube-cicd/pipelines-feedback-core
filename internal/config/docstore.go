@@ -2,6 +2,13 @@ package config
 
 import "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 
+func CreateDocumentStore() DocumentStore {
+	return DocumentStore{
+		namespaces: make(map[string]NamespacedDocuments, 0),
+		global:     make(map[string]*v1alpha1.PFConfig, 0),
+	}
+}
+
 // DocumentStore is a storage for configuration files structured as CRD
 //
 //	Every PFConfig document has meta attributes like Job selector, namespace

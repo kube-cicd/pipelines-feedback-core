@@ -5,8 +5,8 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/controller"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -19,10 +19,12 @@ import (
 
 var (
 	scheme = runtime.NewScheme()
-	appLog = ctrl.Log.WithName("controller")
 )
 
 type PipelinesFeedbackApp struct {
+	// can read configuration from various sources
+	ConfigCollector config.ConfigurationCollector
+
 	JobController          *controller.GenericController
 	ConfigController       *controller.ConfigurationController
 	Debug                  bool
@@ -38,13 +40,13 @@ type PipelinesFeedbackApp struct {
 
 	// Config providers available to choose by the user. Falls back to default, embedded list if not specified
 	AvailableConfigProviders []config.ConfigurationCollector
+
+	Logger logging.Logger
 }
 
 func (app *PipelinesFeedbackApp) Run() error {
-	logrus.SetLevel(logrus.InfoLevel)
-	if app.Debug {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
+	app.Logger = logging.CreateLogger(app.Debug)
+
 	if err := app.populateFeedbackReceiver(); err != nil {
 		return err
 	}
@@ -77,35 +79,35 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	// dependencies
-	if err := app.JobController.InjectDependencies(recorder, kubeconfig); err != nil {
+	if err := app.JobController.InjectDependencies(recorder, kubeconfig, app.Logger); err != nil {
 		return errors.Wrap(err, "cannot inject dependencies to GenericController")
 	}
-	if err := app.ConfigController.Initialize(kubeconfig, app.JobController.ConfigCollector); err != nil {
+	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector); err != nil {
 		return errors.Wrap(err, "cannot push dependencies to ConfigurationController")
 	}
 
 	// register controllers
 	if err = app.JobController.SetupWithManager(mgr); err != nil {
-		appLog.Error(err, "unable to setup job controller", "controller")
+		app.Logger.Error(err, "unable to setup job controller", "controller")
 		return err
 	}
 	if err = app.ConfigController.SetupWithManager(mgr); err != nil {
-		appLog.Error(err, "unable to setup configuration controller", "config")
+		app.Logger.Error(err, "unable to setup configuration controller", "config")
 		return err
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		appLog.Error(err, "unable to set up healthz")
+		app.Logger.Error(err, "unable to set up healthz")
 		return err
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		appLog.Error(err, "unable to set up readyz")
+		app.Logger.Error(err, "unable to set up readyz")
 		return err
 	}
 
-	appLog.Info("starting manager")
+	app.Logger.Info("Starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		appLog.Error(err, "cannot start manager")
+		app.Logger.Error(err, "cannot start manager")
 		return err
 	}
 	return nil
@@ -115,7 +117,6 @@ func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
 	//
 	// The mechanism allows to register multiple options and let the user to chose one option
 	//
-
 	if app.CustomFeedbackReceiver == "" {
 		return nil
 	}
@@ -134,9 +135,13 @@ func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
 }
 
 func (app *PipelinesFeedbackApp) populateConfigProvider() error {
+	// if the user did not select anything
 	if app.CustomConfigProvider == "" {
+		app.ConfigCollector = &config.LocalFileConfigurationCollector{}
+		app.ConfigCollector.SetLogger(app.Logger)
 		return nil
 	}
+	// if there are no available providers
 	if app.AvailableConfigProviders == nil {
 		app.AvailableConfigProviders = []config.ConfigurationCollector{
 			&config.LocalFileConfigurationCollector{},
@@ -145,13 +150,16 @@ func (app *PipelinesFeedbackApp) populateConfigProvider() error {
 	collectors := make([]config.ConfigurationCollector, 0)
 	for _, pluggable := range app.AvailableConfigProviders {
 		if pluggable.CanHandle(app.CustomConfigProvider) {
+			pluggable.SetLogger(app.Logger)
 			collectors = append(collectors, pluggable)
-			return nil
 		}
 	}
-	app.JobController.ConfigCollector = config.CreateMultipleCollector(collectors)
-
-	return errors.New("unrecognized ConfigProviders: " + app.CustomConfigProvider)
+	if len(collectors) == 0 {
+		return errors.New("unrecognized ConfigProviders: " + app.CustomConfigProvider)
+	}
+	app.ConfigCollector = config.CreateMultipleCollector(collectors)
+	app.ConfigCollector.SetLogger(app.Logger)
+	return nil
 }
 
 func createKubeConfiguration(kubeconfig string) (*rest.Config, error) {

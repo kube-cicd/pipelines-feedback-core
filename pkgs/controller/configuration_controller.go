@@ -24,7 +24,7 @@ func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
 	}
-	cc.docs = configinternal.DocumentStore{}
+	cc.docs = configinternal.CreateDocumentStore()
 	cc.client = client.PipelinesfeedbackV1alpha1()
 	return cc.collectInitially(collector)
 }

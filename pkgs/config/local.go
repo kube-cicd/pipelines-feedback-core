@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/rest"
@@ -11,6 +12,11 @@ import (
 )
 
 type LocalFileConfigurationCollector struct {
+	logger logging.Logger
+}
+
+func (lf *LocalFileConfigurationCollector) SetLogger(logger logging.Logger) {
+	lf.logger = logger
 }
 
 func (lf *LocalFileConfigurationCollector) InjectDependencies(recorder record.EventRecorder, kubeconfig *rest.Config) error {
@@ -36,26 +42,32 @@ func (lf *LocalFileConfigurationCollector) CollectInitially() ([]*v1alpha1.PFCon
 
 	// the file is optional
 	if os.IsNotExist(err) {
+		lf.logger.Infof("Config does not exist at path '%s', not loading", path)
 		return []*v1alpha1.PFConfig{}, nil
 	}
 	// unknown error
 	if err != nil {
+		lf.logger.Errorf("Cannot load config: '%s'", err.Error())
 		return []*v1alpha1.PFConfig{}, errors.Wrap(err, "cannot load configuration file")
 	}
 	// not a file - a directory
 	if stat.IsDir() {
+		lf.logger.Errorf("Cannot load config: '%s'", "is a directory, not a file")
 		return []*v1alpha1.PFConfig{}, errors.New("is a directory, not a file")
 	}
 
 	// the file is valid, so lets parse it
 	data, openErr := os.ReadFile(path)
 	if openErr != nil {
+		lf.logger.Errorf("Cannot open config file: '%s'", openErr.Error())
 		return []*v1alpha1.PFConfig{}, errors.Wrap(openErr, "cannot read configuration file")
 	}
 	pfc := v1alpha1.NewPFConfig()
 	if unmarshalErr := json.Unmarshal(data, &pfc.Data); unmarshalErr != nil {
+		lf.logger.Errorf("Cannot unmarshal config file: '%s'", openErr.Error())
 		return []*v1alpha1.PFConfig{}, errors.Wrap(unmarshalErr, "cannot unmarshal file from JSON into struct")
 	}
+	lf.logger.Infof("Loaded config from '%s'", path)
 	return []*v1alpha1.PFConfig{&pfc}, nil
 }
 
