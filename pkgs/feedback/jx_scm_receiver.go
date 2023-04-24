@@ -45,6 +45,10 @@ type JXSCMReceiver struct {
 //
 //	will be created, and then edited multiple times
 func (jx *JXSCMReceiver) updatePRStatusComment(ctx context.Context, pipeline contract.PipelineInfo) error {
+
+	// todo: dynamic client setup
+	jx.sc.Log.Debug("config", jx.sc.Config.FetchContextual("default", pipeline))
+
 	idPart := "(pfc-id=" + pipeline.GetId() + ")"
 
 	if pipeline.GetSCMContext().PrId == "" {

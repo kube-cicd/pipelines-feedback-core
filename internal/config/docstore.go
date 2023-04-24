@@ -21,6 +21,21 @@ type DocumentStore struct {
 
 type NamespacedDocuments map[string]*v1alpha1.PFConfig
 
+func (ds *DocumentStore) GetForNamespace(namespace string) []*v1alpha1.PFConfig {
+	// first provide global configuration
+	docsForNs := make([]*v1alpha1.PFConfig, 0)
+	for _, doc := range ds.global {
+		docsForNs = append(docsForNs, doc)
+	}
+	// then provide namespaced configuration
+	if docs, exists := ds.namespaces[namespace]; exists {
+		for _, doc := range docs {
+			docsForNs = append(docsForNs, doc)
+		}
+	}
+	return docsForNs
+}
+
 // Push is adding or overwriting a document in DocumentStore
 func (ds *DocumentStore) Push(cfg *v1alpha1.PFConfig) {
 	// global

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
@@ -126,24 +127,26 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // InjectDependencies is wiring dependencies to all services
-func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config, logger logging.Logger) error {
+func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config,
+	logger logging.Logger, configProvider config.ConfigurationProvider) error {
+
 	gc.recorder = recorder
 	gc.kubeConfig = kubeConfig
 	gc.logger = logger
 	sc := wiring.ServiceContext{
 		Recorder:   &recorder,
 		KubeConfig: kubeConfig,
-		// Config:     gc.ConfigCollector,
-		Log:   logrus.WithFields(map[string]interface{}{}),
-		Store: &gc.Store,
+		Config:     configProvider,
+		Log:        logrus.WithFields(map[string]interface{}{}),
+		Store:      &gc.Store,
 	}
 	nErr := func(name string, err error) error {
 		return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
 	}
-	// if _, ok := gc.ConfigCollector.(wiring.WithInitialization); ok {
-	//	if err := gc.ConfigCollector.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-	//		return nErr("ConfigCollector", err)
-	//	}
+	// if _, ok := gc.ConfigProvider.(wiring.WithInitialization); ok {
+	// 	if err := gc.ConfigProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
+	// 		return nErr("ConfigCollector", err)
+	// 	}
 	// }
 	if _, ok := gc.PipelineInfoProvider.(wiring.WithInitialization); ok {
 		if err := gc.PipelineInfoProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {

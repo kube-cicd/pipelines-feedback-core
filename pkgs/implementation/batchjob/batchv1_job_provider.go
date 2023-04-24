@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	v1model "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	"os"
 	"time"
@@ -78,6 +79,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 			{Name: "job/" + job.Name, Status: jobStatus},
 		},
 		dashboardUrl,
+		labels.Set(job.Labels),
 	)
 
 	return *pi, nil

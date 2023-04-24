@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -21,6 +22,20 @@ type PFConfig struct {
 
 func (pfc *PFConfig) IsGlobalConfiguration() bool {
 	return pfc.Namespace == ""
+}
+
+func (pfc *PFConfig) IsForPipeline(pipeline contract.PipelineInfo) bool {
+	// no selector = matches all
+	if len(pfc.Spec.JobDiscovery.LabelSelector) == 0 {
+		return true
+	}
+	for _, labelSelector := range pfc.Spec.JobDiscovery.LabelSelector {
+		selector, _ := metav1.LabelSelectorAsSelector(&labelSelector)
+		if selector.Matches(pipeline.GetLabels()) {
+			return true
+		}
+	}
+	return false
 }
 
 // NewPFConfig is making a new instance of a resource making sure that defaults will be respected

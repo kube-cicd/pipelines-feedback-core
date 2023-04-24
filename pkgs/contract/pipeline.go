@@ -2,6 +2,7 @@ package contract
 
 import (
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"net/url"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ type PipelineInfo struct {
 	stages       []PipelineStage
 	url          string
 	retrievalNum int
+	labels       labels.Labels
 }
 
 func (pi PipelineInfo) GetId() string {
@@ -92,8 +94,12 @@ func (pi PipelineInfo) SetRetrievalCount(num int) {
 	pi.retrievalNum = num
 }
 
+func (pi PipelineInfo) GetLabels() labels.Labels {
+	return pi.labels
+}
+
 func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName string, dateStarted time.Time,
-	status Status, stages []PipelineStage, url string) *PipelineInfo {
+	status Status, stages []PipelineStage, url string, labels labels.Labels) *PipelineInfo {
 
 	return &PipelineInfo{
 		ctx:          scm,
@@ -103,6 +109,7 @@ func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName
 		dateStarted:  dateStarted,
 		status:       status,
 		stages:       stages,
+		labels:       labels,
 		url:          url,
 	}
 }

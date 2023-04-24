@@ -16,7 +16,7 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	}
 
 	app.CustomFeedbackReceiver = ""
-	app.CustomConfigProvider = ""
+	app.CustomConfigCollector = ""
 
 	//
 	// FeedbackReceiver and ConfigCollector can be enforced by the controller.
@@ -33,12 +33,12 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	}
 	if app.ConfigCollector == nil {
 		available := ""
-		if app.AvailableConfigProviders != nil {
-			for _, option := range app.AvailableConfigProviders {
+		if app.AvailableConfigCollectors != nil {
+			for _, option := range app.AvailableConfigCollectors {
 				available += option.GetImplementationName() + ", "
 			}
 		}
-		command.Flags().StringVarP(&app.CustomConfigProvider, "config-provider", "c", "local", "Sets a ConfigCollector (possible options: "+strings.TrimRight(available, ", ")+" - possible to set multiple, comma separated, without spaces)")
+		command.Flags().StringVarP(&app.CustomConfigCollector, "config-provider", "c", "local", "Sets a ConfigCollector (possible options: "+strings.TrimRight(available, ", ")+" - possible to set multiple, comma separated, without spaces)")
 	}
 
 	command.Flags().BoolVarP(&app.Debug, "debug", "v", false, "Increase verbosity to the debug level")

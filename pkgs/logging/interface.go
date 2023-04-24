@@ -24,7 +24,9 @@ type Logger interface {
 func CreateLogger(isDebugLevel bool) Logger {
 	instance := logrus.New()
 	instance.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 	if isDebugLevel {
+		logrus.SetLevel(logrus.DebugLevel)
 		instance.SetLevel(logrus.DebugLevel)
 	}
 	return instance
@@ -32,6 +34,7 @@ func CreateLogger(isDebugLevel bool) Logger {
 
 // CreateK8sContextualLogger creates a logger instance with a Kubernetes controller's reconciliation request context
 func CreateK8sContextualLogger(ctx context.Context, req ctrl.Request) Logger {
+	// todo: set log level
 	id, _ := uuid.NewUUID()
 	return logrus.WithContext(ctx).WithFields(map[string]interface{}{
 		"request": id,

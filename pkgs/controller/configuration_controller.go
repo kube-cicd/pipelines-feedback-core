@@ -7,6 +7,7 @@ import (
 	v1alpha1client "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned"
 	pipelinesfeedbackv1alpha1 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/typed/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -15,16 +16,18 @@ import (
 
 // ConfigurationController is reconciling CRD that provides configuration
 type ConfigurationController struct {
-	docs   configinternal.DocumentStore
-	client pipelinesfeedbackv1alpha1.PipelinesfeedbackV1alpha1Interface
+	Provider config.ConfigurationProvider
+	docs     configinternal.DocumentStore
+	client   pipelinesfeedbackv1alpha1.PipelinesfeedbackV1alpha1Interface
 }
 
-func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector config.ConfigurationCollector) error {
+func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector config.ConfigurationCollector, logger logging.Logger) error {
 	client, err := v1alpha1client.NewForConfig(kubeConfig)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
 	}
 	cc.docs = configinternal.CreateDocumentStore()
+	cc.Provider = config.ConfigurationProvider{DocStore: cc.docs, Logger: logger}
 	cc.client = client.PipelinesfeedbackV1alpha1()
 	return cc.collectInitially(collector)
 }

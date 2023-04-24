@@ -33,13 +33,13 @@ type PipelinesFeedbackApp struct {
 	LeaderElect            bool
 
 	CustomFeedbackReceiver string
-	CustomConfigProvider   string
+	CustomConfigCollector  string
 
 	// Feedback receivers available to choose by the user. Falls back to default, embedded list if not specified
 	AvailableFeedbackReceivers []feedback.Receiver
 
 	// Config providers available to choose by the user. Falls back to default, embedded list if not specified
-	AvailableConfigProviders []config.ConfigurationCollector
+	AvailableConfigCollectors []config.ConfigurationCollector
 
 	Logger logging.Logger
 }
@@ -50,7 +50,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 	if err := app.populateFeedbackReceiver(); err != nil {
 		return err
 	}
-	if err := app.populateConfigProvider(); err != nil {
+	if err := app.populateConfigCollector(); err != nil {
 		return err
 	}
 
@@ -79,11 +79,11 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	// dependencies
-	if err := app.JobController.InjectDependencies(recorder, kubeconfig, app.Logger); err != nil {
-		return errors.Wrap(err, "cannot inject dependencies to GenericController")
-	}
-	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector); err != nil {
+	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector, app.Logger); err != nil {
 		return errors.Wrap(err, "cannot push dependencies to ConfigurationController")
+	}
+	if err := app.JobController.InjectDependencies(recorder, kubeconfig, app.Logger, app.ConfigController.Provider); err != nil {
+		return errors.Wrap(err, "cannot inject dependencies to GenericController")
 	}
 
 	// register controllers
@@ -134,28 +134,28 @@ func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
 	return errors.New("unrecognized FeedbackProvider")
 }
 
-func (app *PipelinesFeedbackApp) populateConfigProvider() error {
+func (app *PipelinesFeedbackApp) populateConfigCollector() error {
 	// if the user did not select anything
-	if app.CustomConfigProvider == "" {
+	if app.CustomConfigCollector == "" {
 		app.ConfigCollector = &config.LocalFileConfigurationCollector{}
 		app.ConfigCollector.SetLogger(app.Logger)
 		return nil
 	}
-	// if there are no available providers
-	if app.AvailableConfigProviders == nil {
-		app.AvailableConfigProviders = []config.ConfigurationCollector{
+	// if there are no available collectors
+	if app.AvailableConfigCollectors == nil {
+		app.AvailableConfigCollectors = []config.ConfigurationCollector{
 			&config.LocalFileConfigurationCollector{},
 		}
 	}
 	collectors := make([]config.ConfigurationCollector, 0)
-	for _, pluggable := range app.AvailableConfigProviders {
-		if pluggable.CanHandle(app.CustomConfigProvider) {
+	for _, pluggable := range app.AvailableConfigCollectors {
+		if pluggable.CanHandle(app.CustomConfigCollector) {
 			pluggable.SetLogger(app.Logger)
 			collectors = append(collectors, pluggable)
 		}
 	}
 	if len(collectors) == 0 {
-		return errors.New("unrecognized ConfigProviders: " + app.CustomConfigProvider)
+		return errors.New("unrecognized ConfigProviders: " + app.CustomConfigCollector)
 	}
 	app.ConfigCollector = config.CreateMultipleCollector(collectors)
 	app.ConfigCollector.SetLogger(app.Logger)
