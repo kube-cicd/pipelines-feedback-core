@@ -8,6 +8,12 @@ import (
 	"strconv"
 )
 
+const StatusCacheTtl = 86400 * 30
+const StatusLongCacheTtl = 86400 * 365 * 10
+
+// SecretCacheTtl is used to not fetch the same `kind: Secret` multiple times during at least one Pipeline lifecycle
+const SecretCacheTtl = 120
+
 type Operator struct {
 	Store
 }
@@ -26,7 +32,7 @@ func (o *Operator) CountHowManyTimesKubernetesResourceReceived(retrieved *contra
 		counter = c
 	}
 	counter += 1
-	if setErr := o.Set(ident, fmt.Sprintf("%v", counter)); setErr != nil {
+	if setErr := o.Set(ident, fmt.Sprintf("%v", counter), StatusCacheTtl); setErr != nil {
 		logrus.Error("cannot save to store", setErr)
 	}
 	return counter
@@ -43,7 +49,7 @@ func (o *Operator) WasEventAlreadySent(retrieved contract.PipelineInfo, eventTyp
 
 func (o *Operator) RecordEventFiring(retrieved contract.PipelineInfo, eventType string) error {
 	ident := retrieved.GetId() + "/" + eventType
-	if err := o.Set(ident, "true"); err != nil {
+	if err := o.Set(ident, "true", StatusLongCacheTtl); err != nil {
 		return errors.Wrap(err, "cannot store information, that event was already fired - RecordEventFiring()")
 	}
 	return nil
@@ -58,12 +64,12 @@ func (o *Operator) GetLastRecordedPipelineStatus(pipeline contract.PipelineInfo)
 }
 
 func (o *Operator) RecordInfoAboutLastComment(pipeline contract.PipelineInfo, commentId string) {
-	_ = o.Set(pipeline.GetId()+"/PRCommentId", commentId)
-	_ = o.Set(pipeline.GetId()+"/PRLastStatus", string(pipeline.GetStatus()))
+	_ = o.Set(pipeline.GetId()+"/PRCommentId", commentId, StatusCacheTtl)
+	_ = o.Set(pipeline.GetId()+"/PRLastStatus", string(pipeline.GetStatus()), StatusCacheTtl)
 }
 
 func (o *Operator) RecordSummaryCommentCreated(pipeline contract.PipelineInfo) {
-	_ = o.Set(pipeline.GetId()+"/PRSummaryCreated", "true")
+	_ = o.Set(pipeline.GetId()+"/PRSummaryCreated", "true", StatusLongCacheTtl)
 }
 
 func (o *Operator) WasSummaryCommentCreated(pipeline contract.PipelineInfo) bool {
@@ -78,4 +84,15 @@ func (o *Operator) readOrEmpty(pipeline contract.PipelineInfo, key string) strin
 		return ""
 	}
 	return existing
+}
+
+func (o *Operator) GetConfigSecretKey(namespace string, refKey string, refSecretKey string) string {
+	ident := namespace + "/" + refKey + "/" + refSecretKey
+	existing, _ := o.Get(ident)
+	return existing
+}
+
+func (o *Operator) PushConfigSecretKey(namespace string, refKey string, refSecretKey string, val string) {
+	ident := namespace + "/" + refKey + "/" + refSecretKey
+	_ = o.Set(ident, val, SecretCacheTtl)
 }
