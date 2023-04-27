@@ -22,14 +22,15 @@ func TemplateDashboardUrl(templateStr string, kubeObject v1.Object, typeMeta v1.
 
 func TemplateProgressComment(templateStr string, pipeline contract.PipelineInfo, buildId string) (string, error) {
 	return render(templateStr, "progress-comment-template", map[string]interface{}{
-		"pipeline": pipeline,
-		"buildId":  buildId,
+		"pipeline":  pipeline,
+		"commentId": buildId,
 	})
 }
 
-func TemplateSummaryComment(templateStr string, pipeline contract.PipelineInfo) (string, error) {
+func TemplateSummaryComment(templateStr string, pipeline contract.PipelineInfo, buildId string) (string, error) {
 	return render(templateStr, "summary-comment-template", map[string]interface{}{
-		"pipeline": pipeline,
+		"pipeline":  pipeline,
+		"commentId": buildId,
 	})
 }
 
