@@ -8,6 +8,8 @@ import (
 	"k8s.io/client-go/tools/record"
 )
 
+// WithInitialization allows to inject a context granting access to standard services like logging,
+// key-value storage, kubeconfig or configuration provider
 type WithInitialization interface {
 	InitializeWithContext(sc *ServiceContext) error
 }

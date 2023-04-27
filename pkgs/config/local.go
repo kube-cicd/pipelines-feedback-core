@@ -34,6 +34,7 @@ func (lf *LocalFileConfigurationCollector) GetImplementationName() string {
 // CollectInitially is looking for a JSON file specified in CONFIG_PATH environment variable
 // it falls back to "pipelines-feedback.json" local file path. If the file does not exist it is ignored.
 func (lf *LocalFileConfigurationCollector) CollectInitially() ([]*v1alpha1.PFConfig, error) {
+	var empty []*v1alpha1.PFConfig
 	path := os.Getenv("CONFIG_PATH")
 	if path == "" {
 		path = "pipelines-feedback.json"
@@ -43,29 +44,29 @@ func (lf *LocalFileConfigurationCollector) CollectInitially() ([]*v1alpha1.PFCon
 	// the file is optional
 	if os.IsNotExist(err) {
 		lf.logger.Infof("Config does not exist at path '%s', not loading", path)
-		return []*v1alpha1.PFConfig{}, nil
+		return empty, nil
 	}
 	// unknown error
 	if err != nil {
 		lf.logger.Errorf("Cannot load config: '%s'", err.Error())
-		return []*v1alpha1.PFConfig{}, errors.Wrap(err, "cannot load configuration file")
+		return empty, errors.Wrap(err, "cannot load configuration file")
 	}
 	// not a file - a directory
 	if stat.IsDir() {
 		lf.logger.Errorf("Cannot load config: '%s'", "is a directory, not a file")
-		return []*v1alpha1.PFConfig{}, errors.New("is a directory, not a file")
+		return empty, errors.New("is a directory, not a file")
 	}
 
 	// the file is valid, so lets parse it
 	data, openErr := os.ReadFile(path)
 	if openErr != nil {
 		lf.logger.Errorf("Cannot open config file: '%s'", openErr.Error())
-		return []*v1alpha1.PFConfig{}, errors.Wrap(openErr, "cannot read configuration file")
+		return empty, errors.Wrap(openErr, "cannot read configuration file")
 	}
 	pfc := v1alpha1.NewPFConfig()
 	if unmarshalErr := json.Unmarshal(data, &pfc.Data); unmarshalErr != nil {
 		lf.logger.Errorf("Cannot unmarshal config file: '%s'", openErr.Error())
-		return []*v1alpha1.PFConfig{}, errors.Wrap(unmarshalErr, "cannot unmarshal file from JSON into struct")
+		return empty, errors.Wrap(unmarshalErr, "cannot unmarshal file from JSON into struct")
 	}
 	lf.logger.Infof("Loaded config from '%s'", path)
 	return []*v1alpha1.PFConfig{&pfc}, nil
