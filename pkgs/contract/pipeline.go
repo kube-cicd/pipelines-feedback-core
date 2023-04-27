@@ -98,6 +98,10 @@ func (pi PipelineInfo) GetLabels() labels.Labels {
 	return pi.labels
 }
 
+func (pi PipelineInfo) GetNamespace() string {
+	return pi.namespace
+}
+
 func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName string, dateStarted time.Time,
 	status Status, stages []PipelineStage, url string, labels labels.Labels) *PipelineInfo {
 

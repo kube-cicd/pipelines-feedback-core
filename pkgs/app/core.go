@@ -5,6 +5,7 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/controller"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback/jxscm"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -79,7 +80,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	// dependencies
-	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector, app.Logger); err != nil {
+	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector, app.Logger, app.JobController.Store); err != nil {
 		return errors.Wrap(err, "cannot push dependencies to ConfigurationController")
 	}
 	if err := app.JobController.InjectDependencies(recorder, kubeconfig, app.Logger, app.ConfigController.Provider); err != nil {
@@ -122,7 +123,7 @@ func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
 	}
 	if app.AvailableFeedbackReceivers == nil {
 		app.AvailableFeedbackReceivers = []feedback.Receiver{
-			&feedback.JXSCMReceiver{},
+			&jxscm.Receiver{},
 		}
 	}
 	for _, pluggable := range app.AvailableFeedbackReceivers {

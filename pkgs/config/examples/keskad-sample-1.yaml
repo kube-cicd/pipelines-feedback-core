@@ -7,3 +7,4 @@ spec:
     jobDiscovery: {}
 data:
     jxscm.token-secret-name: "some-secret"
+    jxscm.token-secret-key: "token"

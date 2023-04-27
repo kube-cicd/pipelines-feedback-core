@@ -2,26 +2,26 @@ package config
 
 import "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 
-func CreateDocumentStore() DocumentStore {
-	return DocumentStore{
+func CreateIndexedDocumentStore() IndexedDocumentStore {
+	return IndexedDocumentStore{
 		namespaces: make(map[string]NamespacedDocuments, 0),
 		global:     make(map[string]*v1alpha1.PFConfig, 0),
 	}
 }
 
-// DocumentStore is a storage for configuration files structured as CRD
+// IndexedDocumentStore is a storage for configuration files structured as CRD
 //
 //	Every PFConfig document has meta attributes like Job selector, namespace
 //	so a ConfigurationService can serve a contextual documentation - in context of a Job
 //	or in global context.
-type DocumentStore struct {
+type IndexedDocumentStore struct {
 	namespaces map[string]NamespacedDocuments
 	global     map[string]*v1alpha1.PFConfig
 }
 
 type NamespacedDocuments map[string]*v1alpha1.PFConfig
 
-func (ds *DocumentStore) GetForNamespace(namespace string) []*v1alpha1.PFConfig {
+func (ds *IndexedDocumentStore) GetForNamespace(namespace string) []*v1alpha1.PFConfig {
 	// first provide global configuration
 	docsForNs := make([]*v1alpha1.PFConfig, 0)
 	for _, doc := range ds.global {
@@ -36,8 +36,8 @@ func (ds *DocumentStore) GetForNamespace(namespace string) []*v1alpha1.PFConfig 
 	return docsForNs
 }
 
-// Push is adding or overwriting a document in DocumentStore
-func (ds *DocumentStore) Push(cfg *v1alpha1.PFConfig) {
+// Push is adding or overwriting a document in IndexedDocumentStore
+func (ds *IndexedDocumentStore) Push(cfg *v1alpha1.PFConfig) {
 	// global
 	if cfg.IsGlobalConfiguration() {
 		ds.global[cfg.Name] = cfg
@@ -55,8 +55,8 @@ func (ds *DocumentStore) Push(cfg *v1alpha1.PFConfig) {
 	ds.namespaces[nsName] = ns
 }
 
-// Delete is deleting an element from DocumentStore
-func (ds *DocumentStore) Delete(namespace string, name string) {
+// Delete is deleting an element from IndexedDocumentStore
+func (ds *IndexedDocumentStore) Delete(namespace string, name string) {
 	// namespaced
 	if namespace != "" {
 		if _, exists := ds.namespaces[namespace]; exists {
