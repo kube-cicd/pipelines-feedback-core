@@ -21,6 +21,9 @@ type PipelineInfo struct {
 	url          string
 	retrievalNum int
 	labels       labels.Labels
+
+	// todo: logs - last 16 lines of logs. Max 1024 characters. Line max length = 128 characters
+	// todo: logs from all stages at batch or from whole Pipeline?
 }
 
 func (pi PipelineInfo) GetId() string {

@@ -3,6 +3,7 @@ package jxscm
 import (
 	"context"
 	"fmt"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/templating"
@@ -43,13 +44,13 @@ type Receiver struct {
 // updatePRStatusComment is keeping the PR comment up-to-date with the detailed status of the Pipeline. The comment
 //
 //	will be created, and then edited multiple times
-func (jx *Receiver) updatePRStatusComment(ctx context.Context, pipeline contract.PipelineInfo) error {
+func (jx *Receiver) updatePRStatusComment(ctx context.Context, cfg config.Data, pipeline contract.PipelineInfo) error {
 	// if we are not in context of a PR, then it makes no sense to proceed
 	if pipeline.GetSCMContext().PrId == "" {
 		return nil
 	}
 
-	client, clientErr := jx.createClient(ctx, pipeline)
+	client, clientErr := jx.createClient(ctx, cfg, pipeline)
 	if clientErr != nil {
 		return errors.Wrap(clientErr, "cannot create/update PR status comment, SCM client error")
 	}
@@ -71,7 +72,11 @@ func (jx *Receiver) updatePRStatusComment(ctx context.Context, pipeline contract
 		return nil
 	}
 
-	content, tplErr := templating.TemplateProgressComment(createTemplate(defaultProgressComment), pipeline, markingPart)
+	content, tplErr := templating.TemplateProgressComment(
+		createTemplate(cfg.GetOrDefault("progress-comment", defaultProgressComment)),
+		pipeline,
+		markingPart,
+	)
 	if tplErr != nil {
 		return errors.Wrap(tplErr, "cannot create a comment from template")
 	}
@@ -120,7 +125,8 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 		return nil
 	}
 
-	client, clientErr := jx.createClient(ctx, pipeline)
+	cfg := jx.sc.Config.FetchContextual("jxscm", pipeline.GetNamespace(), pipeline)
+	client, clientErr := jx.createClient(ctx, cfg, pipeline)
 	if clientErr != nil {
 		return errors.Wrap(clientErr, "cannot create/update PR status comment, SCM client error")
 	}
@@ -142,7 +148,11 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 	}
 
 	// Template a comment body
-	content, tplErr := templating.TemplateSummaryComment(createTemplate(defaultFinishedComment), pipeline, markingPart)
+	content, tplErr := templating.TemplateSummaryComment(
+		createTemplate(cfg.GetOrDefault("finished-comment", defaultFinishedComment)),
+		pipeline,
+		markingPart,
+	)
 	if tplErr != nil {
 		return errors.Wrap(tplErr, "cannot create a comment from template")
 	}
@@ -160,7 +170,8 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 
 // UpdateProgress is keeping commit & PR up-to-date with the progress by creating & updating statuses
 func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.PipelineInfo) error {
-	client, clientErr := jx.createClient(ctx, pipeline)
+	cfg := jx.sc.Config.FetchContextual("jxscm", pipeline.GetNamespace(), pipeline)
+	client, clientErr := jx.createClient(ctx, cfg, pipeline)
 	if clientErr != nil {
 		return errors.Wrap(clientErr, "cannot create/update PR status comment, SCM client error")
 	}
@@ -172,7 +183,7 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 	var commitStatusErr error = nil
 	var prCommentStatusErr error = nil
 
-	if commentStatusErr := jx.updatePRStatusComment(ctx, pipeline); commentStatusErr != nil {
+	if commentStatusErr := jx.updatePRStatusComment(ctx, cfg, pipeline); commentStatusErr != nil {
 		prCommentStatusErr = errors.Wrap(commentStatusErr, "cannot create/update status comment in Pull Request")
 	}
 
@@ -239,12 +250,10 @@ func (jx *Receiver) findCommentIdByMarking(ctx context.Context, markingPart stri
 	return ""
 }
 
-func (jx *Receiver) createClient(ctx context.Context, pipeline contract.PipelineInfo) (*scm.Client, error) {
-	data := jx.sc.Config.FetchContextual(pipeline.GetNamespace(), pipeline)
-
+func (jx *Receiver) createClient(ctx context.Context, data config.Data, pipeline contract.PipelineInfo) (*scm.Client, error) {
 	// will first try to fetch GIT token from "jxscm.token" (plaintext in configuration)
 	// fallbacks to looking for a `kind: Secret` specified by name in "jxscm.token-secret-name", and there it will look for a key specified by "jxscm.token-secret-key"
-	gitToken, err := jx.sc.Config.FetchFromFieldOrSecret(ctx, &data, pipeline.GetNamespace(), "jxscm.token", "jxscm.token-secret-key", "jxscm.token-secret-name")
+	gitToken, err := jx.sc.Config.FetchFromFieldOrSecret(ctx, &data, pipeline.GetNamespace(), "token", "token-secret-key", "token-secret-name")
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create a JX SCM client - cannot fetch a GIT token neither from 'jxscm.token' as plaintext neither from a `kind: Secret` referenced in 'jxscm.token-secret-name'")
 	}

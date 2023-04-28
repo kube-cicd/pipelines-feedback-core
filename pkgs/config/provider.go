@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
+	"strings"
 )
 
 type Data map[string]string
@@ -54,7 +55,7 @@ type ConfigurationProvider struct {
 }
 
 // FetchContextual is retrieving a final configuration in context of a given contract.PipelineInfo
-func (cp *ConfigurationProvider) FetchContextual(namespace string, pipeline contract.PipelineInfo) Data {
+func (cp *ConfigurationProvider) FetchContextual(component string, namespace string, pipeline contract.PipelineInfo) Data {
 	cp.logger.Debugf("fetchContextual(%s, %s)", namespace, pipeline.GetFullName())
 	endMap := make(Data)
 	for _, doc := range cp.docStore.GetForNamespace(namespace) {
@@ -64,7 +65,19 @@ func (cp *ConfigurationProvider) FetchContextual(namespace string, pipeline cont
 			endMap = mergeMaps(endMap, doc.Data)
 		}
 	}
-	return endMap
+	return transformMapByComponent(endMap, component)
+}
+
+// transformMapByComponent is stripping map out of other component keys and removing the component prefixes
+func transformMapByComponent(input map[string]string, component string) map[string]string {
+	output := make(map[string]string)
+	for key, val := range input {
+		if strings.HasPrefix(key, component+".") {
+			newKey := key[len(component+"."):]
+			output[newKey] = val
+		}
+	}
+	return output
 }
 
 // FetchSecretKey is fetching a key from .data section from a Kubernetes Secret, directly from the Cluster's API
