@@ -11,7 +11,7 @@ func CreateMultipleCollector(collectors []ConfigurationCollector) *MultipleColle
 	return &MultipleCollector{collectors: collectors}
 }
 
-// MultipleCollector is an adapter of adapters pattern that lets you use multiple configuration sources at a single time
+// MultipleCollector is an "adapter of adapters" pattern that lets you use multiple configuration sources at a single time
 type MultipleCollector struct {
 	collectors []ConfigurationCollector
 	logger     logging.Logger

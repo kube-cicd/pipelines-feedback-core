@@ -48,3 +48,24 @@ cfg := configurationProvider.FetchContextual("jxscm", pipeline.GetNamespace(), p
 // token.txt => a default value in case, when a user would not set anything in the configuration
 println(cfg.GetOrDefault("token-secret-key", "token.txt"))
 ```
+
+Implementing a collector
+------------------------
+
+`ConfigurationCollector` interface lets you implement a configuration source that is fetching configuration files at application startup or at runtime, when a Pipeline is reconciled by the controller.
+
+```go
+type ConfigurationCollector interface {
+	contract.Pluggable
+	CollectInitially() ([]*v1alpha1.PFConfig, error)
+	CollectOnRequest(info contract.PipelineInfo) ([]*v1alpha1.PFConfig, error)
+	SetLogger(logger logging.Logger)
+}
+```
+
+It is up to you, how to read the data. It can be fetched via HTTP, parsed from YAML/JSON or whatever you implement. Most important thing is
+the output format which should be the `v1alpha1.PFConfig` object containing a key-value data section.
+
+**Cases:**
+- `.metadata.namespace` not provided: Configuration will be global for Pipelines in all namespaces
+- `.spec.jobDiscovery` not provided: Configuration will be for all objects in a namespace or in all namespaces
