@@ -45,7 +45,9 @@ batch/v1 Jobs (jobs-feedback)
 
 This repository contains a exemplary and fully functional implementation for basic Kubernetes jobs.
 
-Development
+[Development](./DEVELOPMENT.md)
 -----------
 
-[If you want to join the development or create your own controller, take a look there.](./DEVELOPMENT.md)
+**Pipelines Feedback Core is a framework**, feel free to use it as a library when implementing e.g. "Slack notifications controller" or "Argo Workflows feedback controller".
+
+[See development API for developing integrations or whole custom controllers](./DEVELOPMENT.md)
