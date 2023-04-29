@@ -40,3 +40,4 @@ Building your own controller application
 ----------------------------------------
 
 Copy [main.go](../../main.go) to your project and adjust to your needs, then use `go build` to build a customized controller.
+In order to implement other kind (CRD) inject your implementation to the JobController - [check example for BatchV1Job](../implementation/batchjob/job_controller.go).
