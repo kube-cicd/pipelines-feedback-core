@@ -53,6 +53,15 @@ func (cp *ConfigurationProvider) FetchContextual(component string, namespace str
 	return transformMapByComponent(endMap, component)
 }
 
+// FetchGlobal is fetching a global configuration for given component (without a context of a Pipeline)
+func (cp *ConfigurationProvider) FetchGlobal(component string) Data {
+	endMap := make(Data)
+	for _, doc := range cp.docStore.GetForNamespace("") {
+		endMap = mergeMaps(endMap, doc.Data)
+	}
+	return transformMapByComponent(endMap, component)
+}
+
 // transformMapByComponent is stripping map out of other component keys and removing the component prefixes
 func transformMapByComponent(input map[string]string, component string) map[string]string {
 	output := make(map[string]string)
