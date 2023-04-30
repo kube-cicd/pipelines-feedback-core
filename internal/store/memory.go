@@ -1,6 +1,7 @@
 package store
 
 import (
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -31,11 +32,11 @@ func (m *Memory) Set(key, value string, ttl int) error {
 func (m *Memory) Get(key string) (string, error) {
 	if entry, ok := m.mem[key]; ok {
 		if entry.expires.Before(time.Now()) {
-			return "", errors.New(ErrNotFound)
+			return "", errors.New(store.ErrNotFound)
 		}
 		return entry.val, nil
 	}
-	return "", errors.New(ErrNotFound)
+	return "", errors.New(store.ErrNotFound)
 }
 
 func NewMemory() *Memory {

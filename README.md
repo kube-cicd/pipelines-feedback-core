@@ -18,9 +18,9 @@ Roadmap
 
 **First beta release:**
 - [x] Reference implementation implementing `kind: Job` support
-- [ ] Modular architecture (pluggable: `config`, `receiver`, `provider`, `store`)
+- [x] Modular architecture (pluggable: `config`, `receiver`, `provider`, `store`)
 - [ ] Split on `pkgs` and `internal` to hide internally used methods
-- [ ] Configuration as CRD and as local file, inherited and merged
+- [x] Configuration as CRD and as local file, inherited and merged
 
 **First stable release:**
 - [ ] Freeze the API (in the code as well as in CRD)

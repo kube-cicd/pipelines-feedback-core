@@ -1,11 +1,11 @@
 package app
 
 import (
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/internal/feedback/jxscm"
 	pipelinesfeedbackv1alpha1scheme "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/scheme"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/controller"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/feedback/jxscm"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
