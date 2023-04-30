@@ -22,6 +22,7 @@ Roadmap
 - [x] Split on `pkgs` and `internal` to hide internally used methods
 - [x] Configuration as CRD and as local file, inherited and merged
 - [ ] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
+- [ ] Add support for logs fetching
 
 **First stable release:**
 - [ ] Support for Matrix (Federated, Secure, Slack-like Messenger)
