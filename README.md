@@ -21,8 +21,10 @@ Roadmap
 - [x] Modular architecture (pluggable: `config`, `receiver`, `provider`, `store`)
 - [ ] Split on `pkgs` and `internal` to hide internally used methods
 - [x] Configuration as CRD and as local file, inherited and merged
+- [ ] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
 
 **First stable release:**
+- [ ] Support for Matrix (Federated, Secure, Slack-like Messenger)
 - [ ] Freeze the API (in the code as well as in CRD)
 - [ ] Document the API
 
@@ -47,7 +49,5 @@ This repository contains a exemplary and fully functional implementation for bas
 
 [Development](./DEVELOPMENT.md)
 -----------
-
-**Pipelines Feedback Core is a framework**, feel free to use it as a library when implementing e.g. "Slack notifications controller" or "Argo Workflows feedback controller".
 
 [See development API for developing integrations or whole custom controllers](./DEVELOPMENT.md)
