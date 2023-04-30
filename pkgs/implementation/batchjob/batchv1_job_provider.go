@@ -2,6 +2,7 @@ package batchjob
 
 import (
 	"context"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/k8s"
@@ -14,14 +15,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
-	"os"
 	"time"
 )
 
 type BatchV1JobProvider struct {
-	client *v1.BatchV1Client
-	store  *store.Operator
-	logger logging.Logger
+	client       *v1.BatchV1Client
+	store        *store.Operator
+	logger       logging.Logger
+	confProvider *config.ConfigurationProvider
 }
 
 func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) error {
@@ -32,11 +33,14 @@ func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) 
 	bjp.client = client
 	bjp.store = sc.Store
 	bjp.logger = sc.Log
+	bjp.confProvider = &sc.Config
 	return nil
 }
 
 // ReceivePipelineInfo is tracking batch/v1, kind: Job type objects
 func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name string, namespace string) (contract.PipelineInfo, error) {
+	globalCfg := bjp.confProvider.FetchGlobal("global")
+
 	// find an object
 	job, err := bjp.client.Jobs(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
@@ -61,8 +65,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		startTime = job.Status.StartTime.Time
 	}
 
-	// todo: use configuration provider
-	dashboardUrl, dashboardTplErr := templating.TemplateDashboardUrl(os.Getenv("DASHBOARD_URL"), job, job.TypeMeta)
+	dashboardUrl, dashboardTplErr := templating.TemplateDashboardUrl(globalCfg.Get("dashboard-url"), job, job.TypeMeta)
 	if dashboardTplErr != nil {
 		bjp.logger.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
 	}
