@@ -61,14 +61,30 @@ func TruncateLogs(logs string, data config.Data) string {
 	maxLogsLength := (maxFullLengthLines * maxLineLength) + (maxFullLengthLines * len(lineSplitSeparator))
 
 	asLines := strings.Split(logs, "\n")
+	lines := make([]string, 0)
+	startingFrom := len(asLines) - maxFullLengthLines
+	if startingFrom < 0 {
+		startingFrom = 0
+	}
+
+	processed := 0
 	for num, line := range asLines {
+		if num < startingFrom {
+			continue
+		}
+		processed += 1
 		if len(line) > maxLineLength+len(lineSplitSeparator) {
 			firstPartEnds := maxLineLength / 2
 			secondPartStarts := len(line) - (maxLineLength / 2)
-			asLines[num] = line[0:firstPartEnds] + lineSplitSeparator + line[secondPartStarts:]
+			lines = append(lines, line[0:firstPartEnds]+lineSplitSeparator+line[secondPartStarts:])
+		} else {
+			lines = append(lines, line)
+		}
+		if processed > maxFullLengthLines {
+			break
 		}
 	}
-	logs = strings.Join(asLines, "\n")
+	logs = strings.Join(lines, "\n")
 	if len(logs) < maxLogsLength {
 		return logs
 	}
