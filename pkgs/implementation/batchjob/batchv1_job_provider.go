@@ -15,14 +15,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/client-go/kubernetes/typed/batch/v1"
+	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"time"
 )
 
 type BatchV1JobProvider struct {
-	client       *v1.BatchV1Client
-	store        *store.Operator
-	logger       logging.Logger
-	confProvider *config.ConfigurationProvider
+	batchV1Client *v1.BatchV1Client
+	coreV1Client  *v1core.CoreV1Client
+	store         *store.Operator
+	logger        logging.Logger
+	confProvider  *config.ConfigurationProvider
 }
 
 func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) error {
@@ -30,7 +32,12 @@ func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) 
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
 	}
-	bjp.client = client
+	bjp.batchV1Client = client
+	coreClient, err := v1core.NewForConfig(sc.KubeConfig)
+	if err != nil {
+		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
+	}
+	bjp.coreV1Client = coreClient
 	bjp.store = sc.Store
 	bjp.logger = sc.Log
 	bjp.confProvider = &sc.Config
@@ -42,7 +49,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 	globalCfg := bjp.confProvider.FetchGlobal("global")
 
 	// find an object
-	job, err := bjp.client.Jobs(namespace).Get(ctx, name, metav1.GetOptions{})
+	job, err := bjp.batchV1Client.Jobs(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return contract.PipelineInfo{}, errors.Wrap(err, "cannot fetch batch/v1 Job")
 	}
@@ -70,6 +77,9 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		bjp.logger.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
 	}
 
+	// logs are lazy-fetched on demand
+	logs := func() string { return bjp.fetchLogs(ctx, job, globalCfg) }
+
 	// create an universal PipelineInfo object
 	pi := contract.NewPipelineInfo(
 		scm,
@@ -83,9 +93,18 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		},
 		dashboardUrl,
 		labels.Set(job.Labels),
+		labels.Set(job.Annotations),
+		logs,
 	)
 
 	return *pi, nil
+}
+
+func (bjp *BatchV1JobProvider) fetchLogs(ctx context.Context, job *v1model.Job, data config.Data) string {
+	return k8s.TruncateLogs(
+		k8s.FindAndReadLogsFromLastPod(ctx, bjp.coreV1Client.Pods(job.Namespace), labels.Set(job.Spec.Selector.MatchLabels).String()),
+		data,
+	)
 }
 
 // translateJobStatus translates status from batch/v1 Job format to contract.Status

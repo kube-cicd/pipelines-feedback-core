@@ -27,6 +27,13 @@ const defaultProgressComment = `
 const defaultFinishedComment = `
 The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
 --------------------
+
+{{ if .pipeline.GetLogs }}
+**Build logs:**
+~~~
+{{ .pipeline.GetLogs }}
+~~~
+{{ end }}
 `
 
 const markingBodyPart = `
@@ -149,7 +156,7 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 
 	// Template a comment body
 	content, tplErr := templating.TemplateSummaryComment(
-		createTemplate(cfg.GetOrDefault("finished-comment", defaultFinishedComment)),
+		createTemplate(strings.ReplaceAll(cfg.GetOrDefault("finished-comment", defaultFinishedComment), "~~~", "```")),
 		pipeline,
 		markingPart,
 	)

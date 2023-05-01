@@ -10,8 +10,8 @@ data:
     jxscm.token-secret-key: "token"
 
 #    jxscm.progress-comment: ""
-    jxscm.finished-comment: |
-        The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
-        --------------------
-        
-        Yaaaaaay!
+#    jxscm.finished-comment: |
+#        The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
+#        --------------------
+#
+#        Yaaaaaay!

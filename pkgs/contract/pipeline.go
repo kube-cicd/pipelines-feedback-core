@@ -21,11 +21,12 @@ type PipelineInfo struct {
 	url          string
 	retrievalNum int
 	labels       labels.Labels
-
-	// todo: logs - last 16 lines of logs. Max 1024 characters. Line max length = 128 characters
-	// todo: logs from all stages at batch or from whole Pipeline?
+	annotations  labels.Labels
+	logs         func() string
+	_logs        string
 }
 
+// GetId is returning execution ID, unique for a single Pipeline execution
 func (pi PipelineInfo) GetId() string {
 	return pi.namespace + "/" + pi.name + "/" + pi.instanceName
 }
@@ -80,6 +81,7 @@ func (pi PipelineInfo) GetStatus() Status {
 	return Errored
 }
 
+// GetFullName returns a namespace, object name and its instance name (often uid or generated name)
 func (pi PipelineInfo) GetFullName() string {
 	return pi.namespace + "/" + pi.name + "/" + pi.instanceName
 }
@@ -89,24 +91,40 @@ func (pi PipelineInfo) GetUrl() string {
 	return pi.url
 }
 
+// GetName returns a full object name, including namespace
 func (pi PipelineInfo) GetName() string {
 	return pi.namespace + "/" + pi.name
 }
 
+// SetRetrievalCount (for internal use only)
 func (pi PipelineInfo) SetRetrievalCount(num int) {
 	pi.retrievalNum = num
 }
 
+// GetLabels returns Kubernetes object .metadata.labels
 func (pi PipelineInfo) GetLabels() labels.Labels {
 	return pi.labels
+}
+
+// GetAnnotations returns Kubernetes object .metadata.annotations
+func (pi PipelineInfo) GetAnnotations() labels.Labels {
+	return pi.annotations
 }
 
 func (pi PipelineInfo) GetNamespace() string {
 	return pi.namespace
 }
 
+// GetLogs is returning truncated logs. It is a lazy-loaded method, fetches logs on demand. After first fetch logs are kept in the memory
+func (pi PipelineInfo) GetLogs() string {
+	if pi._logs == "" {
+		pi._logs = pi.logs()
+	}
+	return pi._logs
+}
+
 func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName string, dateStarted time.Time,
-	status Status, stages []PipelineStage, url string, labels labels.Labels) *PipelineInfo {
+	status Status, stages []PipelineStage, url string, labels labels.Labels, annotations labels.Labels, logs func() string) *PipelineInfo {
 
 	return &PipelineInfo{
 		ctx:          scm,
@@ -117,7 +135,10 @@ func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName
 		status:       status,
 		stages:       stages,
 		labels:       labels,
+		annotations:  annotations,
 		url:          url,
+		logs:         logs,
+		_logs:        "",
 	}
 }
 
