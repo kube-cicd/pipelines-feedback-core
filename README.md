@@ -7,7 +7,7 @@ Generic Kubernetes controller watching Jobs on your cluster and notifying extern
 There are **Feedback receivers**, **Feedback providers** and **Configuration providers**.
 
 **Bundled Feedback Receivers:**
-- [go-scm](https://github.com/jenkins-x/go-scm) (strongest Gitlab supported)
+- [jxscm](https://github.com/jenkins-x/go-scm) (Github, Gitea, Gitlab, Bitbucket, etc.)
 
 **Bundled Configuration Providers:**
 - localfile (read configuration from local YAML)
