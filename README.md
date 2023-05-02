@@ -10,8 +10,8 @@ There are **Feedback receivers**, **Feedback providers** and **Configuration pro
 - [jxscm](https://github.com/jenkins-x/go-scm) (Github, Gitea, Gitlab, Bitbucket, etc.)
 
 **Bundled Configuration Providers:**
-- localfile (read configuration from local YAML)
-- annotation (read from Kubernetes annotations)
+- local (read configuration from local JSON file)
+- crd (read from Kubernetes CRD - `kind: PFConfig`)
 
 Roadmap
 -------
