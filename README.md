@@ -16,7 +16,7 @@ There are **Feedback receivers**, **Feedback providers** and **Configuration pro
 Roadmap
 -------
 
-**First beta release:**
+**First alpha release - 0.1:**
 - [x] Reference implementation implementing `kind: Job` support
 - [x] Modular architecture (pluggable: `config`, `receiver`, `provider`, `store`)
 - [x] Split on `pkgs` and `internal` to hide internally used methods
@@ -25,8 +25,12 @@ Roadmap
 - [x] Add support for logs fetching
 - [ ] Configuration schema support
 
-**First stable release:**
+**First beta release - 0.2:**
+- [ ] Support for optional arguments in API for easier future interface extension (https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis)
+- [ ] Support Redis as a cache store
 - [ ] Support for Matrix (Federated, Secure, Slack-like Messenger)
+
+**First stable release - 1.0:**
 - [ ] Freeze the API (in the code as well as in CRD)
 - [ ] Document the API
 
