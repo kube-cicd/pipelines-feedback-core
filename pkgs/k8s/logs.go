@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-// FindAndReadLogsFromLastPod is listing logs from the last Pod found for given selector
+// FindAndReadLogsFromLastPod is listing logs from the last Pod found for given selector. Errors are returned as logs
 // 1. Find all Pods for given Job
 // 2. Sort by metadata.creationTimestamp, desc
 // 3. Pick first and retrieve logs
@@ -37,7 +37,7 @@ func FindAndReadLogsFromLastPod(ctx context.Context, lister v1.PodInterface, sel
 	return ReadRequestStream(ctx, req)
 }
 
-// ReadRequestStream is a helper you can use to read logs from the Pod
+// ReadRequestStream is a helper you can use to read logs from the Pod. Errors are returned as logs
 func ReadRequestStream(ctx context.Context, req *rest.Request) string {
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
@@ -53,7 +53,7 @@ func ReadRequestStream(ctx context.Context, req *rest.Request) string {
 	return buf.String()
 }
 
-// TruncateLogs is truncating logs to maximum 512 bytes
+// TruncateLogs is truncating logs with a maximum lines number, maximum line length
 func TruncateLogs(logs string, data config.Data) string {
 	maxLineLength, _ := strconv.Atoi(data.GetOrDefault("logs-max-line-length", "64"))
 	maxFullLengthLines, _ := strconv.Atoi(data.GetOrDefault("max-full-length-lines-count", "10"))
