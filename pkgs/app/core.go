@@ -22,6 +22,8 @@ var (
 	scheme = runtime.NewScheme()
 )
 
+type SchemeSetter func(*runtime.Scheme) error
+
 type PipelinesFeedbackApp struct {
 	// can read configuration from various sources
 	ConfigCollector config.ConfigurationCollector
@@ -42,6 +44,9 @@ type PipelinesFeedbackApp struct {
 	// Config providers available to choose by the user. Falls back to default, embedded list if not specified
 	AvailableConfigCollectors []config.ConfigurationCollector
 
+	// Allows to register custom CRD schema for the controller
+	KubernetesSchemeSetters []SchemeSetter
+
 	Logger logging.Logger
 }
 
@@ -58,7 +63,9 @@ func (app *PipelinesFeedbackApp) Run() error {
 	// add a standard scheme and Pipelines Feedback Core CRDs
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(pipelinesfeedbackv1alpha1scheme.AddToScheme(scheme))
-	// todo: add custom scheme
+	for _, schemeSetter := range app.KubernetesSchemeSetters {
+		utilruntime.Must(schemeSetter(scheme))
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                        scheme,
