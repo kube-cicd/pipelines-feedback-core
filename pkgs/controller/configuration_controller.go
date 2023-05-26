@@ -20,21 +20,23 @@ type ConfigurationController struct {
 	Provider config.ConfigurationProvider
 	docs     configinternal.IndexedDocumentStore
 	client   pipelinesfeedbackv1alpha1.PipelinesfeedbackV1alpha1Interface
+	logger   logging.Logger
 }
 
 func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector config.ConfigurationCollector,
-	logger logging.Logger, kvStore store.Operator) error {
+	logger logging.Logger, kvStore store.Operator, schema *config.SchemaValidator) error {
 
+	cc.logger = logger
 	client, err := v1alpha1client.NewForConfig(kubeConfig)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize BatchV1JobProvider")
 	}
 
 	// storage
-	cc.docs = configinternal.CreateIndexedDocumentStore()
+	cc.docs = configinternal.CreateIndexedDocumentStore(schema)
 
 	// API interface for components
-	cc.Provider, err = config.NewConfigurationProvider(cc.docs, logger, kubeConfig, kvStore)
+	cc.Provider, err = config.NewConfigurationProvider(cc.docs, logger, kubeConfig, kvStore, schema)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize ConfigurationController")
 	}
@@ -50,7 +52,12 @@ func (cc *ConfigurationController) Reconcile(ctx context.Context, req ctrl.Reque
 		cc.docs.Delete(req.Namespace, req.Name)
 		return ctrl.Result{}, err
 	}
-	cc.docs.Push(cfg)
+
+	if pErr := cc.docs.Push(cfg); pErr != nil {
+		cc.logger.Errorf("cannot load configuration '%s' coming from Kubernetes: %s", req.NamespacedName, pErr.Error())
+		return ctrl.Result{RequeueAfter: 300}, pErr
+	}
+	cc.logger.Infof("loaded configuration '%s' from Kubernetes", req.NamespacedName)
 
 	return ctrl.Result{}, nil
 }
@@ -67,7 +74,9 @@ func (cc *ConfigurationController) collectInitially(collector config.Configurati
 		return errors.Wrap(err, "cannot initially read configuration")
 	}
 	for _, doc := range docs {
-		cc.docs.Push(doc)
+		if pErr := cc.docs.Push(doc); pErr != nil {
+			return pErr
+		}
 	}
 	return nil
 }

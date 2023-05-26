@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CreateMultipleCollector(collectors []ConfigurationCollector) *MultipleCollector {
-	return &MultipleCollector{collectors: collectors}
+func CreateMultipleCollector(collectors []ConfigurationCollector, logger logging.Logger) *MultipleCollector {
+	return &MultipleCollector{collectors: collectors, logger: logger}
 }
 
 // MultipleCollector is an "adapter of adapters" pattern that lets you use multiple configuration sources at a single time

@@ -23,7 +23,7 @@ Roadmap
 - [x] Configuration as CRD and as local file, inherited and merged
 - [ ] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
 - [x] Add support for logs fetching
-- [ ] Configuration schema support
+- [x] Configuration schema support
 
 **First beta release - 0.2:**
 - [ ] Support for optional arguments in API for easier future interface extension (https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis)

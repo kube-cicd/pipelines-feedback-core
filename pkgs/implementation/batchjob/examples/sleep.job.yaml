@@ -15,6 +15,6 @@ spec:
             containers:
                 - name: sleep
                   image: busybox:latest
-                  command: ["/bin/sh", "-c", "sleep 10; wget https://example.org/ -O /dev/stdout; sleep 1"]
+                  command: ["/bin/sh", "-c", "set -x; sleep 10; ls /; ps aux; sleep 1"]
             restartPolicy: Never
     backoffLimit: 4

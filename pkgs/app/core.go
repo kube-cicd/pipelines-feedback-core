@@ -34,6 +34,7 @@ type PipelinesFeedbackApp struct {
 	MetricsBindAddress     string
 	HealthProbeBindAddress string
 	LeaderElect            bool
+	LeaderElectId          string
 
 	CustomFeedbackReceiver string
 	CustomConfigCollector  string
@@ -48,6 +49,7 @@ type PipelinesFeedbackApp struct {
 	KubernetesSchemeSetters []SchemeSetter
 
 	Logger logging.Logger
+	schema *config.SchemaValidator
 }
 
 func (app *PipelinesFeedbackApp) Run() error {
@@ -63,6 +65,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 	// add a standard scheme and Pipelines Feedback Core CRDs
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(pipelinesfeedbackv1alpha1scheme.AddToScheme(scheme))
+	// custom CRD schemes
 	for _, schemeSetter := range app.KubernetesSchemeSetters {
 		utilruntime.Must(schemeSetter(scheme))
 	}
@@ -73,7 +76,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 		Port:                          9443,
 		HealthProbeBindAddress:        app.HealthProbeBindAddress,
 		LeaderElection:                app.LeaderElect,
-		LeaderElectionID:              "aSaMKO0.keskad.pl",
+		LeaderElectionID:              app.LeaderElectId + ".keskad.pl",
 		LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
@@ -86,11 +89,26 @@ func (app *PipelinesFeedbackApp) Run() error {
 		panic(err.Error())
 	}
 
+	// PFConfig schema registration: There all dynamically loaded components are able to register their schema
+	// for configuration keys validation
+	app.schema = &config.SchemaValidator{}
+	app.schema.Add(config.Schema{
+		Name: "global",
+		AllowedFields: []string{
+			"dashboard-url",
+			"logs-max-line-length",
+			"max-full-length-lines-count",
+			"logs-split-separator",
+		},
+	})
+
 	// dependencies
-	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector, app.Logger, app.JobController.Store); err != nil {
+	if err := app.ConfigController.Initialize(kubeconfig, app.ConfigCollector, app.Logger, app.JobController.Store, app.schema); err != nil {
 		return errors.Wrap(err, "cannot push dependencies to ConfigurationController")
 	}
-	if err := app.JobController.InjectDependencies(recorder, kubeconfig, app.Logger, app.ConfigController.Provider); err != nil {
+	if err := app.JobController.InjectDependencies(recorder, kubeconfig, app.Logger,
+		app.ConfigController.Provider, app.schema); err != nil {
+
 		return errors.Wrap(err, "cannot inject dependencies to GenericController")
 	}
 
@@ -165,7 +183,7 @@ func (app *PipelinesFeedbackApp) populateConfigCollector() error {
 	if len(collectors) == 0 {
 		return errors.New("unrecognized ConfigProviders: " + app.CustomConfigCollector)
 	}
-	app.ConfigCollector = config.CreateMultipleCollector(collectors)
+	app.ConfigCollector = config.CreateMultipleCollector(collectors, app.Logger)
 	app.ConfigCollector.SetLogger(app.Logger)
 	return nil
 }

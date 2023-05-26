@@ -10,7 +10,6 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
@@ -128,26 +127,22 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 
 // InjectDependencies is wiring dependencies to all services
 func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config,
-	logger logging.Logger, configProvider config.ConfigurationProvider) error {
+	logger logging.Logger, configProvider config.ConfigurationProvider, cfgSchema *config.SchemaValidator) error {
 
 	gc.recorder = recorder
 	gc.kubeConfig = kubeConfig
 	gc.logger = logger
 	sc := wiring.ServiceContext{
-		Recorder:   &recorder,
-		KubeConfig: kubeConfig,
-		Config:     configProvider,
-		Log:        logrus.WithFields(map[string]interface{}{}),
-		Store:      &gc.Store,
+		Recorder:     &recorder,
+		KubeConfig:   kubeConfig,
+		Config:       configProvider,
+		Log:          logrus.WithFields(map[string]interface{}{}),
+		Store:        &gc.Store,
+		ConfigSchema: cfgSchema,
 	}
 	nErr := func(name string, err error) error {
 		return errors.Wrap(err, fmt.Sprintf("cannot inject dependencies to %s", name))
 	}
-	// if _, ok := gc.ConfigProvider.(wiring.WithInitialization); ok {
-	// 	if err := gc.ConfigProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
-	// 		return nErr("ConfigCollector", err)
-	// 	}
-	// }
 	if _, ok := gc.PipelineInfoProvider.(wiring.WithInitialization); ok {
 		if err := gc.PipelineInfoProvider.(wiring.WithInitialization).InitializeWithContext(&sc); err != nil {
 			return nErr("PipelineInfoProvider", err)
@@ -159,12 +154,4 @@ func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, k
 		}
 	}
 	return nil
-}
-
-func createLogger(ctx context.Context, req ctrl.Request) *logrus.Entry {
-	id, _ := uuid.NewUUID()
-	return logrus.WithContext(ctx).WithFields(map[string]interface{}{
-		"request": id,
-		"name":    req.NamespacedName,
-	})
 }

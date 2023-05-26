@@ -114,6 +114,24 @@ func (jx *Receiver) updatePRStatusComment(ctx context.Context, cfg config.Data, 
 func (jx *Receiver) InitializeWithContext(sc *wiring.ServiceContext) error {
 	sc.Log.Info("Initializing JX SCM Receiver")
 	jx.sc = sc
+
+	// register configuration options
+	jx.sc.ConfigSchema.Add(config.Schema{
+		Name: "jxscm",
+		AllowedFields: []string{
+			"token-secret-name",
+			"token-secret-key",
+			"git-repo-url",
+			"git-kind",
+			"git-server",
+			"git-token",
+			"git-user",
+			"bb-oauth-client-id",
+			"bb-oauth-client-secret",
+			"progress-comment",
+			"finished-comment",
+		},
+	})
 	return nil
 }
 

@@ -1,11 +1,15 @@
 package config
 
-import "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+import (
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/pkg/errors"
+)
 
-func CreateIndexedDocumentStore() IndexedDocumentStore {
+func CreateIndexedDocumentStore(cfgSchema Validator) IndexedDocumentStore {
 	return IndexedDocumentStore{
 		namespaces: make(map[string]NamespacedDocuments, 0),
 		global:     make(map[string]*v1alpha1.PFConfig, 0),
+		cfgSchema:  cfgSchema,
 	}
 }
 
@@ -17,6 +21,7 @@ func CreateIndexedDocumentStore() IndexedDocumentStore {
 type IndexedDocumentStore struct {
 	namespaces map[string]NamespacedDocuments
 	global     map[string]*v1alpha1.PFConfig
+	cfgSchema  Validator
 }
 
 type NamespacedDocuments map[string]*v1alpha1.PFConfig
@@ -37,11 +42,15 @@ func (ds *IndexedDocumentStore) GetForNamespace(namespace string) []*v1alpha1.PF
 }
 
 // Push is adding or overwriting a document in IndexedDocumentStore
-func (ds *IndexedDocumentStore) Push(cfg *v1alpha1.PFConfig) {
+func (ds *IndexedDocumentStore) Push(cfg *v1alpha1.PFConfig) error {
+	if vErr := ds.cfgSchema.ValidateConfig(cfg.Data); vErr != nil {
+		return errors.Wrap(vErr, "cannot push PFConfig to IndexedDocumentStore")
+	}
+
 	// global
 	if cfg.IsGlobalConfiguration() {
 		ds.global[cfg.Name] = cfg
-		return
+		return nil
 	}
 
 	// namespaced
@@ -53,6 +62,7 @@ func (ds *IndexedDocumentStore) Push(cfg *v1alpha1.PFConfig) {
 	ns := ds.namespaces[nsName]
 	ns[cfg.Name] = cfg
 	ds.namespaces[nsName] = ns
+	return nil
 }
 
 // Delete is deleting an element from IndexedDocumentStore

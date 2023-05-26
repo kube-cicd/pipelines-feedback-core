@@ -16,7 +16,7 @@ import (
 
 // NewConfigurationProvider is a constructor
 func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger logging.Logger,
-	kubeConfig *rest.Config, kvStore store.Operator) (ConfigurationProvider, error) {
+	kubeConfig *rest.Config, kvStore store.Operator, cfgSchema *SchemaValidator) (ConfigurationProvider, error) {
 
 	client, err := v1.NewForConfig(kubeConfig)
 	if err != nil {
@@ -28,6 +28,7 @@ func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger loggi
 		logger:        logger,
 		secretsClient: client,
 		stateStore:    kvStore,
+		cfgSchema:     cfgSchema,
 	}, nil
 }
 
@@ -37,12 +38,15 @@ type ConfigurationProvider struct {
 	logger        logging.Logger
 	secretsClient *v1.CoreV1Client
 	stateStore    store.Operator
+	cfgSchema     *SchemaValidator
 }
+
+// todo: implement CollectOnRequest()
 
 // FetchContextual is retrieving a final configuration in context of a given contract.PipelineInfo
 func (cp *ConfigurationProvider) FetchContextual(component string, namespace string, pipeline contract.PipelineInfo) Data {
 	cp.logger.Debugf("fetchContextual(%s, %s)", namespace, pipeline.GetFullName())
-	endMap := make(Data)
+	endMap := make(map[string]string)
 	for _, doc := range cp.docStore.GetForNamespace(namespace) {
 		cp.logger.Debugf("fetchContextual => config '%s' available for this namespace, checking if matches", doc.Name)
 		if doc.IsForPipeline(pipeline) {
@@ -50,16 +54,16 @@ func (cp *ConfigurationProvider) FetchContextual(component string, namespace str
 			endMap = mergeMaps(endMap, doc.Data)
 		}
 	}
-	return transformMapByComponent(endMap, component)
+	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema)
 }
 
 // FetchGlobal is fetching a global configuration for given component (without a context of a Pipeline)
 func (cp *ConfigurationProvider) FetchGlobal(component string) Data {
-	endMap := make(Data)
+	endMap := make(map[string]string)
 	for _, doc := range cp.docStore.GetForNamespace("") {
 		endMap = mergeMaps(endMap, doc.Data)
 	}
-	return transformMapByComponent(endMap, component)
+	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema)
 }
 
 // transformMapByComponent is stripping map out of other component keys and removing the component prefixes
