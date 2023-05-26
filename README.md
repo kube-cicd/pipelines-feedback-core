@@ -21,7 +21,7 @@ Roadmap
 - [x] Modular architecture (pluggable: `config`, `receiver`, `provider`, `store`)
 - [x] Split on `pkgs` and `internal` to hide internally used methods
 - [x] Configuration as CRD and as local file, inherited and merged
-- [ ] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
+- [x] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
 - [x] Add support for logs fetching
 - [x] Configuration schema support
 
