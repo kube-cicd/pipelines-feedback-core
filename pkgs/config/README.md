@@ -84,3 +84,7 @@ ERRO[0005] cannot load configuration 'default/keskad-sample-1' coming from Kuber
 
 
 b) Configuration value is read in code: Validate if the developer documented a configuration key used in code
+
+```
+FATA[0001] code contains undocumented configuration option: jxscm.progress-comment, please register it in schema so the users will be aware of it
+```
