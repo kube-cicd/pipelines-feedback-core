@@ -69,3 +69,18 @@ the output format which should be the `v1alpha1.PFConfig` object containing a ke
 **Cases:**
 - `.metadata.namespace` not provided: Configuration will be global for Pipelines in all namespaces
 - `.spec.jobDiscovery` not provided: Configuration will be for all objects in a namespace or in all namespaces
+
+
+Schema validation
+-----------------
+
+`SchemaValidator` component is responsible for validation in two cases:
+
+a) Configuration load time: Validate if user's configuration contains valid keys
+
+```
+ERRO[0005] cannot load configuration 'default/keskad-sample-1' coming from Kubernetes: cannot push PFConfig to IndexedDocumentStore: field 'dupa' is not a valid field for component 'jxscm'
+```
+
+
+b) Configuration value is read in code: Validate if the developer documented a configuration key used in code
