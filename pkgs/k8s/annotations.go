@@ -9,15 +9,23 @@ import (
 
 // HasUsableAnnotations is checking if Kubernetes object is usable at all
 func HasUsableAnnotations(meta metav1.ObjectMeta) (bool, error) {
-	scm, err := CreateSCMContextFromKubernetesAnnotations(meta)
+	scm, err := CreateJobContextFromKubernetesAnnotations(meta)
 	if err != nil {
 		return false, err
 	}
 	return scm.IsValid(), nil
 }
 
-// CreateSCMContextFromKubernetesAnnotations translates any Kubernetes object into contract.SCMContext
-func CreateSCMContextFromKubernetesAnnotations(meta metav1.ObjectMeta) (contract.SCMContext, error) {
+// CreateJobContextFromKubernetesAnnotations translates any Kubernetes object into contract.JobContext
+func CreateJobContextFromKubernetesAnnotations(meta metav1.ObjectMeta) (contract.JobContext, error) {
+	isTechnicalJob := false
+	techJob := ""
+	if val, exists := meta.Annotations[contract.AnnotationTechnicalJob]; exists {
+		logrus.Debugf("Has '%s'", contract.AnnotationTechnicalJob)
+		isTechnicalJob = true
+		techJob = val
+	}
+
 	repoHttpsUrl := ""
 	if val, exists := meta.Annotations[contract.AnnotationHttpsRepo]; exists {
 		logrus.Debugf("Has '%s'", contract.AnnotationHttpsRepo)
@@ -25,11 +33,11 @@ func CreateSCMContextFromKubernetesAnnotations(meta metav1.ObjectMeta) (contract
 	}
 
 	scm, err := contract.NewSCMContext(repoHttpsUrl)
-	if err != nil {
-		return scm, errors.Wrap(err, "cannot create SCMContext")
+	if err != nil && !isTechnicalJob {
+		return scm, errors.Wrap(err, "cannot create JobContext")
 	}
 
-	scm.RepoHttpsUrl = repoHttpsUrl
+	scm.TechnicalJob = techJob
 
 	if val, exists := meta.Annotations[contract.AnnotationPrId]; exists {
 		logrus.Debugf("Has '%s'", contract.AnnotationPrId)

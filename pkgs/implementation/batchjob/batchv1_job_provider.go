@@ -63,7 +63,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 	}
 
 	// translate its status
-	scm, _ := k8s.CreateSCMContextFromKubernetesAnnotations(job.ObjectMeta)
+	scm, _ := k8s.CreateJobContextFromKubernetesAnnotations(job.ObjectMeta)
 	jobStatus := translateJobStatus(job)
 
 	// start time

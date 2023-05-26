@@ -10,7 +10,7 @@ import (
 
 // PipelineInfo is a point-in-time Pipeline status including the SCM information
 type PipelineInfo struct {
-	ctx SCMContext
+	ctx JobContext
 
 	name         string
 	instanceName string
@@ -41,7 +41,7 @@ func (pi PipelineInfo) GetStages() []PipelineStage {
 	return pi.stages
 }
 
-func (pi PipelineInfo) GetSCMContext() SCMContext {
+func (pi PipelineInfo) GetSCMContext() JobContext {
 	return pi.ctx
 }
 
@@ -123,7 +123,7 @@ func (pi PipelineInfo) GetLogs() string {
 	return pi._logs
 }
 
-func NewPipelineInfo(scm SCMContext, namespace string, name string, instanceName string, dateStarted time.Time,
+func NewPipelineInfo(scm JobContext, namespace string, name string, instanceName string, dateStarted time.Time,
 	status Status, stages []PipelineStage, url string, labels labels.Labels, annotations labels.Labels, logs func() string) *PipelineInfo {
 
 	return &PipelineInfo{
@@ -187,7 +187,7 @@ type PipelineStage struct {
 	Status Status
 }
 
-type SCMContext struct {
+type JobContext struct {
 	// Commit represents long commit hash
 	Commit string
 
@@ -202,10 +202,16 @@ type SCMContext struct {
 
 	OrganizationName string
 	RepositoryName   string
+
+	// When a job does not have a SCM context, but has a technical-job annotation
+	TechnicalJob string
 }
 
-func NewSCMContext(repoHttpsUrl string) (SCMContext, error) {
-	scm := SCMContext{}
+func NewSCMContext(repoHttpsUrl string) (JobContext, error) {
+	scm := JobContext{}
+	scm.RepoHttpsUrl = repoHttpsUrl
+	scm.OrganizationName = ""
+	scm.RepositoryName = ""
 
 	// not matching, not containing the annotation
 	if len(repoHttpsUrl) == 0 {
@@ -229,10 +235,17 @@ func NewSCMContext(repoHttpsUrl string) (SCMContext, error) {
 	return scm, nil
 }
 
-func (c SCMContext) IsValid() bool {
+func (c JobContext) IsTechnicalJob() bool {
+	return c.TechnicalJob != ""
+}
+
+func (c JobContext) IsValid() bool {
+	if c.TechnicalJob != "" {
+		return true
+	}
 	return (c.Commit != "" || c.PrId != "") && c.RepoHttpsUrl != ""
 }
 
-func (c SCMContext) GetNameWithOrg() string {
+func (c JobContext) GetNameWithOrg() string {
 	return c.OrganizationName + "/" + c.RepositoryName
 }

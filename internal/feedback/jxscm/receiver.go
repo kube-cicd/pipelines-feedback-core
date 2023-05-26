@@ -145,6 +145,10 @@ func (jx *Receiver) WhenStarted(ctx context.Context, pipeline contract.PipelineI
 
 // WhenFinished is creating a final comment on the PR to make sure user is notified about the final status
 func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.PipelineInfo) error {
+	if pipeline.GetSCMContext().IsTechnicalJob() {
+		return nil
+	}
+
 	// Skip if not in a PR context
 	if pipeline.GetSCMContext().PrId == "" {
 		return nil
@@ -195,6 +199,10 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 
 // UpdateProgress is keeping commit & PR up-to-date with the progress by creating & updating statuses
 func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.PipelineInfo) error {
+	if pipeline.GetSCMContext().IsTechnicalJob() {
+		return nil
+	}
+
 	cfg := jx.sc.Config.FetchContextual("jxscm", pipeline.GetNamespace(), pipeline)
 	client, clientErr := jx.createClient(ctx, cfg, pipeline)
 	if clientErr != nil {

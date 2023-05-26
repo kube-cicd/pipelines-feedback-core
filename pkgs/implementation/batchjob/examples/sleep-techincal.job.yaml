@@ -1,0 +1,17 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: sleep-technical
+    namespace: default
+    annotations:
+        pipelinesfeedback.keskad.pl/technical-job: "backup"
+spec:
+    template:
+        spec:
+            containers:
+                - name: sleep
+                  image: busybox:latest
+                  command: ["/bin/sh", "-c", "echo 'Doing backup...' sleep 10; echo 'Done!'"]
+            restartPolicy: Never
+    backoffLimit: 4
