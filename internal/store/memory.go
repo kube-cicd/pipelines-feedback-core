@@ -31,7 +31,7 @@ func (m *Memory) Set(key, value string, ttl int) error {
 
 func (m *Memory) Get(key string) (string, error) {
 	if entry, ok := m.mem[key]; ok {
-		if entry.expires.Before(time.Now()) {
+		if entry.expires.After(time.Now()) {
 			return "", errors.New(store.ErrNotFound)
 		}
 		return entry.val, nil
