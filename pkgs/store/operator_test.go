@@ -10,6 +10,25 @@ import (
 import "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 import internalstore "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/internal/store"
 
+func createBreadBookPipeline() *contract.PipelineInfo {
+	scm, _ := contract.NewSCMContext("https://gitlab.com/aaa/bbb.git")
+	return contract.NewPipelineInfo(
+		scm,
+		"default",
+		"hello-kropotkin",
+		"the-conquest-of-bread",
+		time.Now(),
+		contract.Running,
+		[]contract.PipelineStage{},
+		"https://dashboard.tekton.local/pipeline-some/pipeline",
+		fields.Set{},
+		fields.Set{},
+		func() string {
+			return "Baked!"
+		},
+	)
+}
+
 func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 	o := store.Operator{Store: internalstore.NewMemory()}
 	scm, _ := contract.NewSCMContext("https://gitlab.com/aaa/bbb.git")
@@ -48,9 +67,18 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		fields.Set{},
 		fields.Set{},
 		func() string {
-			return "Baked!"
+			return "Created!"
 		},
 	)
 	assert.Equal(t, 1, o.CountHowManyTimesKubernetesResourceReceived(secondPipeline))
 	assert.Equal(t, 2, o.CountHowManyTimesKubernetesResourceReceived(secondPipeline))
+}
+
+func TestOperator_RecordEventFiring_WasEventAlreadySent(t *testing.T) {
+	o := store.Operator{Store: internalstore.NewMemory()}
+
+	assert.False(t, o.WasEventAlreadySent(*createBreadBookPipeline(), "start"))
+
+	_ = o.RecordEventFiring(*createBreadBookPipeline(), "start")
+	assert.True(t, o.WasEventAlreadySent(*createBreadBookPipeline(), "start"))
 }
