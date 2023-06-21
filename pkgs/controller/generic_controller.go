@@ -11,7 +11,6 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/provider"
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -37,11 +36,11 @@ type GenericController struct {
 
 	kubeConfig *rest.Config
 
-	logger logging.Logger
+	logger *logging.InternalLogger
 }
 
 func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := logging.CreateK8sContextualLogger(ctx, req)
+	logger := logging.CreateK8sContextualLogger(ctx, gc.logger, req)
 
 	//
 	// Fetch the object from PipelineInfoProvider
@@ -76,7 +75,7 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // updateProgress decides when to trigger notification events to the RECEIVER
-func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger logging.Logger) error {
+func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger *logging.InternalLogger) error {
 	// Always update progress
 	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetId())
 	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved); upErr != nil {
@@ -127,7 +126,7 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 
 // InjectDependencies is wiring dependencies to all services
 func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config,
-	logger logging.Logger, configProvider config.ConfigurationProvider, cfgSchema *config.SchemaValidator) error {
+	logger *logging.InternalLogger, configProvider config.ConfigurationProvider, cfgSchema *config.SchemaValidator) error {
 
 	gc.recorder = recorder
 	gc.kubeConfig = kubeConfig
@@ -136,7 +135,7 @@ func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, k
 		Recorder:     &recorder,
 		KubeConfig:   kubeConfig,
 		Config:       configProvider,
-		Log:          logrus.WithFields(map[string]interface{}{}),
+		Log:          logger.ForkWithFields(context.TODO(), map[string]interface{}{}),
 		Store:        &gc.Store,
 		ConfigSchema: cfgSchema,
 	}

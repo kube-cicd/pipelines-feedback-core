@@ -48,7 +48,7 @@ type PipelinesFeedbackApp struct {
 	// Allows to register custom CRD schema for the controller
 	KubernetesSchemeSetters []SchemeSetter
 
-	Logger logging.Logger
+	Logger *logging.InternalLogger
 	schema *config.SchemaValidator
 }
 

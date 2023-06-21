@@ -7,17 +7,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CreateMultipleCollector(collectors []ConfigurationCollector, logger logging.Logger) *MultipleCollector {
+func CreateMultipleCollector(collectors []ConfigurationCollector, logger *logging.InternalLogger) *MultipleCollector {
 	return &MultipleCollector{collectors: collectors, logger: logger}
 }
 
 // MultipleCollector is an "adapter of adapters" pattern that lets you use multiple configuration sources at a single time
 type MultipleCollector struct {
 	collectors []ConfigurationCollector
-	logger     logging.Logger
+	logger     *logging.InternalLogger
 }
 
-func (mc *MultipleCollector) SetLogger(logger logging.Logger) {
+func (mc *MultipleCollector) SetLogger(logger *logging.InternalLogger) {
 	mc.logger = logger
 }
 

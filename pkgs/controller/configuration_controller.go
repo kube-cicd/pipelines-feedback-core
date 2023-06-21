@@ -20,11 +20,11 @@ type ConfigurationController struct {
 	Provider config.ConfigurationProvider
 	docs     configinternal.IndexedDocumentStore
 	client   pipelinesfeedbackv1alpha1.PipelinesfeedbackV1alpha1Interface
-	logger   logging.Logger
+	logger   *logging.InternalLogger
 }
 
 func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector config.ConfigurationCollector,
-	logger logging.Logger, kvStore store.Operator, schema *config.SchemaValidator) error {
+	logger *logging.InternalLogger, kvStore store.Operator, schema *config.SchemaValidator) error {
 
 	cc.logger = logger
 	client, err := v1alpha1client.NewForConfig(kubeConfig)

@@ -12,10 +12,10 @@ import (
 )
 
 type LocalFileConfigurationCollector struct {
-	logger logging.Logger
+	logger *logging.InternalLogger
 }
 
-func (lf *LocalFileConfigurationCollector) SetLogger(logger logging.Logger) {
+func (lf *LocalFileConfigurationCollector) SetLogger(logger *logging.InternalLogger) {
 	lf.logger = logger
 }
 

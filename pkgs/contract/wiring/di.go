@@ -18,7 +18,7 @@ type ServiceContext struct {
 	Recorder     *record.EventRecorder
 	KubeConfig   *rest.Config
 	Config       config.ConfigurationProvider
-	Log          logging.Logger
+	Log          *logging.InternalLogger
 	Store        *store.Operator
 	ConfigSchema *config.SchemaValidator
 }

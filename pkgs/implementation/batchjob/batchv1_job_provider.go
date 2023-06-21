@@ -23,7 +23,7 @@ type BatchV1JobProvider struct {
 	batchV1Client *v1.BatchV1Client
 	coreV1Client  *v1core.CoreV1Client
 	store         *store.Operator
-	logger        logging.Logger
+	logger        *logging.InternalLogger
 	confProvider  *config.ConfigurationProvider
 }
 

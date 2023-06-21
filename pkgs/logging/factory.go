@@ -8,7 +8,7 @@ import (
 )
 
 // CreateLogger is creating a global logger instance
-func CreateLogger(isDebugLevel bool) Logger {
+func CreateLogger(isDebugLevel bool) *InternalLogger {
 	instance := logrus.New()
 	instance.SetLevel(logrus.InfoLevel)
 	logrus.SetLevel(logrus.InfoLevel)
@@ -16,14 +16,13 @@ func CreateLogger(isDebugLevel bool) Logger {
 		logrus.SetLevel(logrus.DebugLevel)
 		instance.SetLevel(logrus.DebugLevel)
 	}
-	return instance
+	return &InternalLogger{instance.WithContext(context.TODO())}
 }
 
 // CreateK8sContextualLogger creates a logger instance with a Kubernetes controller's reconciliation request context
-func CreateK8sContextualLogger(ctx context.Context, req ctrl.Request) Logger {
-	// todo: set log level
+func CreateK8sContextualLogger(ctx context.Context, mainLogger *InternalLogger, req ctrl.Request) *InternalLogger {
 	id, _ := uuid.NewUUID()
-	return logrus.WithContext(ctx).WithFields(map[string]interface{}{
+	return mainLogger.ForkWithFields(ctx, map[string]interface{}{
 		"request": id,
 		"name":    req.NamespacedName,
 	})

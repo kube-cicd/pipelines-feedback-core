@@ -15,7 +15,7 @@ import (
 )
 
 // NewConfigurationProvider is a constructor
-func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger logging.Logger,
+func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger *logging.InternalLogger,
 	kubeConfig *rest.Config, kvStore store.Operator, cfgSchema *SchemaValidator) (ConfigurationProvider, error) {
 
 	client, err := v1.NewForConfig(kubeConfig)
@@ -35,7 +35,7 @@ func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger loggi
 // ConfigurationProvider is serving already collected configuration. Served configuration is already merged from various sources
 type ConfigurationProvider struct {
 	docStore      config.IndexedDocumentStore
-	logger        logging.Logger
+	logger        *logging.InternalLogger
 	secretsClient *v1.CoreV1Client
 	stateStore    store.Operator
 	cfgSchema     *SchemaValidator

@@ -10,5 +10,5 @@ type ConfigurationCollector interface {
 	contract.Pluggable
 	CollectInitially() ([]*v1alpha1.PFConfig, error)
 	CollectOnRequest(info contract.PipelineInfo) ([]*v1alpha1.PFConfig, error)
-	SetLogger(logger logging.Logger)
+	SetLogger(logger *logging.InternalLogger)
 }
