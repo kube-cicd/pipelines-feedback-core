@@ -37,3 +37,9 @@ generate: $(CONTROLLER_GEN) codegen-clientset crd-manifests
 codegen-clientset:
 	@echo "Generating Kubernetes Clients"
 	./hack/update-codegen.sh
+
+ensure-go-junit-report:
+	@command -v go-junit-report || (cd /tmp && go install github.com/jstemmer/go-junit-report/v2@latest)
+
+test: ensure-go-junit-report
+	export PATH=$$PATH:~/go/bin:$$GOROOT/bin:$$(pwd)/.build; go test -v ./... -covermode=count -coverprofile=coverage.out 2>&1 | go-junit-report -set-exit-code -out junit.xml -iocopy

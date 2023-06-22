@@ -20,5 +20,5 @@ type ServiceContext struct {
 	Config       config.ConfigurationProvider
 	Log          *logging.InternalLogger
 	Store        *store.Operator
-	ConfigSchema *config.SchemaValidator
+	ConfigSchema *config.SchemaValidator // todo: use interface
 }
