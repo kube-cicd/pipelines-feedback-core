@@ -54,7 +54,7 @@ func (cp *ConfigurationProvider) FetchContextual(component string, namespace str
 			endMap = mergeMaps(endMap, doc.Data)
 		}
 	}
-	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema)
+	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema, cp.logger)
 }
 
 // FetchGlobal is fetching a global configuration for given component (without a context of a Pipeline)
@@ -63,7 +63,7 @@ func (cp *ConfigurationProvider) FetchGlobal(component string) Data {
 	for _, doc := range cp.docStore.GetForNamespace("") {
 		endMap = mergeMaps(endMap, doc.Data)
 	}
-	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema)
+	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema, cp.logger)
 }
 
 // transformMapByComponent is stripping map out of other component keys and removing the component prefixes

@@ -272,7 +272,7 @@ func createTemplate(bodyTemplate string) string {
 	return bodyTemplate + markingBodyPart
 }
 
-// findCommentIdByMarking finds a SCM comment id in a pull request by looking for a text (markingPart) in a comment body. Returns first occurrence
+// findCommentIdByMarking finds an SCM comment id in a pull request by looking for a text (markingPart) in a comment body. Returns first occurrence
 func (jx *Receiver) findCommentIdByMarking(ctx context.Context, markingPart string, pipeline contract.PipelineInfo, prId int, client *scm.Client) string {
 	comments, _, _ := client.PullRequests.ListComments(ctx, pipeline.GetSCMContext().GetNameWithOrg(), prId, &scm.ListOptions{Size: 100})
 	for _, comment := range comments {

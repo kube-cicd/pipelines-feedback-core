@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
 )
 
-func NewData(componentName string, kv map[string]string, validator *SchemaValidator) Data {
+func NewData(componentName string, kv map[string]string, validator Validator, logger logging.FatalLogger) Data {
 	return Data{
+		logger:    logger,
 		component: componentName,
 		kv:        kv,
 		validator: validator,
@@ -13,9 +14,10 @@ func NewData(componentName string, kv map[string]string, validator *SchemaValida
 }
 
 type Data struct {
+	logger    logging.FatalLogger
 	component string
 	kv        map[string]string
-	validator *SchemaValidator
+	validator Validator
 }
 
 func (d *Data) HasKey(keyName string) bool {
@@ -33,12 +35,12 @@ func (d *Data) GetOrDefault(keyName string, defaultVal string) string {
 	// validate: if the code is not using an unknown (undocumented) configuration option
 	if err := d.validator.ValidateRequestedEntry(d.component, keyName); err != nil {
 		// that's a development stage error, should not occur on production build
-		logrus.Fatalf("code contains undocumented configuration option: %s.%s, please register it in schema so the users will be aware of it", d.component, keyName)
+		d.logger.Fatalf("code contains undocumented configuration option: %s.%s, please register it in schema so the users will be aware of it", d.component, keyName)
 		return ""
 	}
 	// fetch key, if not exists, then return default
-	val, hasKey := d.kv[keyName]
-	if hasKey {
+	if d.HasKey(keyName) {
+		val, _ := d.kv[keyName]
 		return val
 	}
 	return defaultVal

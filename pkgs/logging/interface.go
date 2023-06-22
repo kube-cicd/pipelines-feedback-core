@@ -5,6 +5,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type FatalLogger interface {
+	Fatalf(format string, args ...interface{})
+}
+
 // InternalLogger is separating our codebase from logging implementation
 type InternalLogger struct {
 	parent *logrus.Entry
@@ -36,6 +40,10 @@ func (l *InternalLogger) Infof(format string, args ...interface{}) {
 
 func (l *InternalLogger) Warningf(format string, args ...interface{}) {
 	l.parent.Warningf(format, args...)
+}
+
+func (l *InternalLogger) Fatalf(format string, args ...interface{}) {
+	l.parent.Fatalf(format, args...)
 }
 
 func (l *InternalLogger) Errorf(format string, args ...interface{}) {
