@@ -25,10 +25,3 @@ jobs:
                   name: Tests
                   path: "junit.xml"
                   reporter: java-junit
-
-            - name: Coverage report
-              if: always() && !contains(github.event.head_commit.message, '!test skip')
-              uses: slavcodev/coverage-monitor-action@v1
-              with:
-                github_token: ${{ secrets.GITHUB_TOKEN }}
-                coverage_path: "coverage.out"
