@@ -163,14 +163,13 @@ func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
 func (app *PipelinesFeedbackApp) populateConfigCollector() error {
 	// if the user did not select anything
 	if app.CustomConfigCollector == "" {
-		app.ConfigCollector = &config.LocalFileConfigurationCollector{}
-		app.ConfigCollector.SetLogger(app.Logger)
+		app.ConfigCollector = config.NewLocalFileConfigurationCollector(app.Logger, "")
 		return nil
 	}
 	// if there are no available collectors
 	if app.AvailableConfigCollectors == nil {
 		app.AvailableConfigCollectors = []config.ConfigurationCollector{
-			&config.LocalFileConfigurationCollector{},
+			config.NewLocalFileConfigurationCollector(app.Logger, ""),
 		}
 	}
 	collectors := make([]config.ConfigurationCollector, 0)

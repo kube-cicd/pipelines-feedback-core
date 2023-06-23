@@ -9,6 +9,12 @@ type FatalLogger interface {
 	Fatalf(format string, args ...interface{})
 }
 
+func NewInternalLogger() *InternalLogger {
+	return &InternalLogger{
+		parent: logrus.New().WithContext(context.TODO()),
+	}
+}
+
 // InternalLogger is separating our codebase from logging implementation
 type InternalLogger struct {
 	parent *logrus.Entry
