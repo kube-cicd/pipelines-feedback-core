@@ -38,6 +38,10 @@ func (pfc *PFConfig) IsForPipeline(pipeline contract.PipelineInfo) bool {
 	return false
 }
 
+func (pfc *PFConfig) HasLabelSelector() bool {
+	return len(pfc.Spec.JobDiscovery.LabelSelector) > 0
+}
+
 // NewPFConfig is making a new instance of a resource making sure that defaults will be respected
 func NewPFConfig() PFConfig {
 	return PFConfig{

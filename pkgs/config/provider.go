@@ -10,19 +10,13 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/rest"
 	"strings"
 )
 
 // NewConfigurationProvider is a constructor
 func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger *logging.InternalLogger,
-	kubeConfig *rest.Config, kvStore store.Operator, cfgSchema *SchemaValidator) (ConfigurationProvider, error) {
+	client v1.CoreV1Interface, kvStore store.Operator, cfgSchema Validator) (ConfigurationProvider, error) {
 
-	client, err := v1.NewForConfig(kubeConfig)
-	if err != nil {
-		return ConfigurationProvider{}, errors.Wrap(err, "cannot construct ConfigurationProvider, "+
-			"Kubernetes Core API v1 construction error")
-	}
 	return ConfigurationProvider{
 		docStore:      docStore,
 		logger:        logger,
@@ -36,9 +30,9 @@ func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger *logg
 type ConfigurationProvider struct {
 	docStore      config.IndexedDocumentStore
 	logger        *logging.InternalLogger
-	secretsClient *v1.CoreV1Client
+	secretsClient v1.CoreV1Interface
 	stateStore    store.Operator
-	cfgSchema     *SchemaValidator
+	cfgSchema     Validator
 }
 
 // todo: implement CollectOnRequest()
@@ -61,6 +55,11 @@ func (cp *ConfigurationProvider) FetchContextual(component string, namespace str
 func (cp *ConfigurationProvider) FetchGlobal(component string) Data {
 	endMap := make(map[string]string)
 	for _, doc := range cp.docStore.GetForNamespace("") {
+		// global configuration should not have a label selector, as label selector means the configuration
+		// is specific to some pipeline
+		if doc.HasLabelSelector() {
+			continue
+		}
 		endMap = mergeMaps(endMap, doc.Data)
 	}
 	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema, cp.logger)
@@ -105,7 +104,7 @@ func (cp *ConfigurationProvider) FetchSecretKey(ctx context.Context, name string
 // FetchFromFieldOrSecret allows to use an inline secret from configuration file (if present), fallbacks to fetching a secret key from a Kubernetes secret
 func (cp *ConfigurationProvider) FetchFromFieldOrSecret(ctx context.Context, data *Data, namespace string, fieldKey string, referenceKey string, referenceSecretNameKey string) (string, error) {
 	if data.HasKey(fieldKey) {
-		return data.GetOrDefault(fieldKey, ""), nil
+		return data.Get(fieldKey), nil
 	}
 	if referenceSecretNameKey != "" {
 		// When the field with `kind: Secret` reference name is empty in the config data.

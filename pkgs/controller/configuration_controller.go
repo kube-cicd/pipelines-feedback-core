@@ -11,6 +11,7 @@ import (
 	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -36,7 +37,12 @@ func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector
 	cc.docs = configinternal.CreateIndexedDocumentStore(schema)
 
 	// API interface for components
-	cc.Provider, err = config.NewConfigurationProvider(cc.docs, logger, kubeConfig, kvStore, schema)
+	coreV1Client, err := corev1.NewForConfig(kubeConfig)
+	if err != nil {
+		return errors.Wrap(err, "cannot construct ConfigurationProvider, "+
+			"Kubernetes Core API v1 construction error")
+	}
+	cc.Provider, err = config.NewConfigurationProvider(cc.docs, logger, coreV1Client, kvStore, schema)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize ConfigurationController")
 	}
