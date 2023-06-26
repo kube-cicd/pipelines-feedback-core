@@ -2,7 +2,7 @@ package templating
 
 import (
 	"bytes"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

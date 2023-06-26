@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/pkg/errors"
 )
 

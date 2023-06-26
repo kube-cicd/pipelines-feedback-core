@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned"
-	internalinterfaces "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/informers/externalversions/internalinterfaces"
-	pipelinesfeedbackkeskadpl "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/informers/externalversions/pipelinesfeedback.keskad.pl"
+	versioned "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/clientset/versioned"
+	internalinterfaces "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/informers/externalversions/internalinterfaces"
+	pipelinesfeedbackkeskadpl "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/informers/externalversions/pipelinesfeedback.keskad.pl"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

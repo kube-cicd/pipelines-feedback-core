@@ -1,9 +1,9 @@
 package config_test
 
 import (
-	intConfig "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/internal/config"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
+	intConfig "github.com/kube-cicd/pipelines-feedback-core/internal/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

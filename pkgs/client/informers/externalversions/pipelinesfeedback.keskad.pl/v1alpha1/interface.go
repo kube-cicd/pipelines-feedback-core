@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

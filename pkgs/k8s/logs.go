@@ -3,7 +3,7 @@ package k8s
 import (
 	"bytes"
 	"context"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"io"
 	v1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

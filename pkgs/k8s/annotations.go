@@ -1,7 +1,7 @@
 package k8s
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

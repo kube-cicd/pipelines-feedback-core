@@ -2,7 +2,7 @@ package store
 
 import (
 	"fmt"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"strconv"

@@ -19,8 +19,8 @@ limitations under the License.
 package pipelinesfeedback
 
 import (
-	internalinterfaces "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/informers/externalversions/pipelinesfeedback.keskad.pl/v1alpha1"
+	internalinterfaces "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/informers/externalversions/pipelinesfeedback.keskad.pl/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

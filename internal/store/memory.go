@@ -1,7 +1,7 @@
 package store
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
 	"time"
 )

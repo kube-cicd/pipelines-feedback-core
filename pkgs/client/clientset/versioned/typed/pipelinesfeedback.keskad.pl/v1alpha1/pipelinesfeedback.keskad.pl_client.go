@@ -21,8 +21,8 @@ package v1alpha1
 import (
 	"net/http"
 
-	v1alpha1 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

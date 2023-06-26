@@ -1,8 +1,8 @@
 package config_test
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 )
 
 func NewData(componentName string, kv map[string]string, validator Validator, logger logging.FatalLogger) Data {

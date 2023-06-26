@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/app"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/app"
 	"github.com/spf13/cobra"
 	"strings"
 )

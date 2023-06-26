@@ -20,7 +20,7 @@ readonly REPO_NAME="${REPO_NAME:-$(basename ${REPO_ROOT_DIR} 2> /dev/null)}"
 
 # deepcopy and clients generation
 bash ${REPO_ROOT_DIR}/hack/generate-groups.sh "deepcopy,client,informer,lister" \
-  github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis \
+  github.com/kube-cicd/pipelines-feedback-core/pkgs/client github.com/kube-cicd/pipelines-feedback-core/pkgs/apis \
   "pipelinesfeedback.keskad.pl:v1alpha1" \
   --go-header-file="${SCRIPT_DIR}/boilerplate.go.txt" \
   --output-base=${SCRIPT_DIR}/../.build/generated
@@ -29,6 +29,6 @@ bash ${REPO_ROOT_DIR}/hack/generate-groups.sh "deepcopy,client,informer,lister" 
 rm -rf ${SCRIPT_DIR}/../pkg/client
 
 # copy regenerated
-cp -pr ${SCRIPT_DIR}/../.build/generated/github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/apis/* ${SCRIPT_DIR}/../pkgs/apis/
-cp -pr ${SCRIPT_DIR}/../.build/generated/github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/client ${SCRIPT_DIR}/../pkgs/
+cp -pr ${SCRIPT_DIR}/../.build/generated/github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/* ${SCRIPT_DIR}/../pkgs/apis/
+cp -pr ${SCRIPT_DIR}/../.build/generated/github.com/kube-cicd/pipelines-feedback-core/pkgs/client ${SCRIPT_DIR}/../pkgs/
 rm -rf ${SCRIPT_DIR}/../.build/generated

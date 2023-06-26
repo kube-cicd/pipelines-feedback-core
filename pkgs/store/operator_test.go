@@ -1,14 +1,14 @@
 package store_test
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/fields"
 	"testing"
 	"time"
 )
-import "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
-import internalstore "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/internal/store"
+import "github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
+import internalstore "github.com/kube-cicd/pipelines-feedback-core/internal/store"
 
 func createBreadBookPipeline() *contract.PipelineInfo {
 	scm, _ := contract.NewSCMContext("https://gitlab.com/aaa/bbb.git")

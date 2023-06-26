@@ -1,9 +1,9 @@
 package batchjob
 
 import (
-	store2 "github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/internal/store"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/controller"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
+	store2 "github.com/kube-cicd/pipelines-feedback-core/internal/store"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/controller"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	v1 "k8s.io/api/batch/v1"
 )
 

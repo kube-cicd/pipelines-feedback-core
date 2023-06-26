@@ -1,9 +1,9 @@
 package wiring
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/config"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/logging"
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/store"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 )

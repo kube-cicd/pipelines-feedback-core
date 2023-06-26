@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"github.com/Kubernetes-Native-CI-CD/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
