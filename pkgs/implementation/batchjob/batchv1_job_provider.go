@@ -87,14 +87,13 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		job.Name,
 		string(job.UID),
 		startTime,
-		jobStatus,
 		[]contract.PipelineStage{
 			{Name: "job/" + job.Name, Status: jobStatus},
 		},
-		dashboardUrl,
 		labels.Set(job.Labels),
 		labels.Set(job.Annotations),
-		logs,
+		contract.PipelineInfoWithUrl(dashboardUrl),
+		contract.PipelineInfoWithLogsCollector(logs),
 	)
 
 	return *pi, nil
@@ -110,13 +109,13 @@ func (bjp *BatchV1JobProvider) fetchLogs(ctx context.Context, job *v1model.Job, 
 // translateJobStatus translates status from batch/v1 Job format to contract.Status
 func translateJobStatus(job *v1model.Job) contract.Status {
 	if job.Status.Failed > 0 {
-		return contract.Failed
+		return contract.PipelineFailed
 	}
 	if job.Status.Active > 0 {
-		return contract.Running
+		return contract.PipelineRunning
 	}
 	if job.Status.Succeeded > 0 {
-		return contract.Succeeded
+		return contract.PipelineSucceeded
 	}
-	return contract.Pending
+	return contract.PipelinePending
 }

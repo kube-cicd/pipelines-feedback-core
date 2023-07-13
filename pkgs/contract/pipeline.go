@@ -50,35 +50,42 @@ func (pi PipelineInfo) GetStatus() Status {
 	pending := 0
 	succeeded := 0
 	running := 0
+	cancelled := 0
 	allStages := len(pi.stages)
 
 	for _, stage := range pi.stages {
-		if stage.Status == Errored {
-			return Errored
+		if stage.Status == PipelineErrored {
+			return PipelineErrored
 		}
-		if stage.Status == Failed {
-			return Failed
+		if stage.Status == PipelineFailed {
+			return PipelineFailed
 		}
-		if stage.Status == Pending {
+		if stage.Status == PipelinePending {
 			pending += 1
 		}
-		if stage.Status == Succeeded {
+		if stage.Status == PipelineSucceeded {
 			succeeded += 1
 		}
-		if stage.Status == Running {
+		if stage.Status == PipelineRunning {
 			running += 1
 		}
+		if stage.Status == PipelineCancelled {
+			cancelled += 1
+		}
+	}
+	if cancelled > 0 {
+		return PipelineCancelled
 	}
 	if pending > 0 {
-		return Pending
+		return PipelinePending
 	}
 	if allStages == succeeded {
-		return Succeeded
+		return PipelineSucceeded
 	}
 	if running > 0 {
-		return Running
+		return PipelineRunning
 	}
-	return Errored
+	return PipelineErrored
 }
 
 // GetFullName returns a namespace, object name and its instance name (often uid or generated name)
@@ -123,59 +130,82 @@ func (pi PipelineInfo) GetLogs() string {
 	return pi._logs
 }
 
-func NewPipelineInfo(scm JobContext, namespace string, name string, instanceName string, dateStarted time.Time,
-	status Status, stages []PipelineStage, url string, labels labels.Labels, annotations labels.Labels, logs func() string) *PipelineInfo {
+// PipelineInfoWithLogsCollector should return whole Pipeline logs on demand. Implement is as lazy-fetch function
+func PipelineInfoWithLogsCollector(collector func() string) func(pipelineInfo *PipelineInfo) {
+	return func(pipelineInfo *PipelineInfo) {
+		pipelineInfo.logs = collector
+	}
+}
 
-	return &PipelineInfo{
+// PipelineInfoWithUrl is setting optionally a URL pointing to a Pipeline visualization
+func PipelineInfoWithUrl(url string) func(pipelineInfo *PipelineInfo) {
+	return func(pipelineInfo *PipelineInfo) {
+		pipelineInfo.url = url
+	}
+}
+
+func NewPipelineInfo(scm JobContext, namespace string, name string, instanceName string, dateStarted time.Time,
+	stages []PipelineStage, labels labels.Labels, annotations labels.Labels, options ...func(info *PipelineInfo)) *PipelineInfo {
+	pi := PipelineInfo{
 		ctx:          scm,
 		name:         name,
 		instanceName: instanceName,
 		namespace:    namespace,
 		dateStarted:  dateStarted,
-		status:       status,
 		stages:       stages,
 		labels:       labels,
 		annotations:  annotations,
-		url:          url,
-		logs:         logs,
-		_logs:        "",
+		url:          "",
+		logs: func() string {
+			return ""
+		},
+		_logs: "",
 	}
+	for _, option := range options {
+		option(&pi)
+	}
+	return &pi
 }
 
 type Status string
 
 const (
-	Running   Status = "running"
-	Failed    Status = "failed"
-	Pending   Status = "pending"
-	Errored   Status = "errored"
-	Succeeded Status = "succeeded"
+	PipelineRunning   Status = "running"
+	PipelineFailed    Status = "failed"
+	PipelinePending   Status = "pending"
+	PipelineErrored   Status = "errored"
+	PipelineSucceeded Status = "succeeded"
+	PipelineCancelled Status = "cancelled"
 )
 
 func (s Status) IsFinished() bool {
-	return s == Failed || s == Errored || s == Succeeded
+	return s == PipelineFailed || s == PipelineErrored || s == PipelineSucceeded
 }
 
 func (s Status) IsRunning() bool {
-	return s == Running
+	return s == PipelineRunning
 }
 
 func (s Status) IsErroredOrFailed() bool {
-	return s == Failed || s == Errored
+	return s == PipelineFailed || s == PipelineErrored
 }
 
 func (s Status) IsSucceeded() bool {
-	return s == Succeeded
+	return s == PipelineSucceeded
+}
+
+func (s Status) IsCancelled() bool {
+	return s == PipelineCancelled
 }
 
 func (s Status) IsNotStarted() bool {
-	return s != Running && s != Failed && s != Errored && s != Succeeded
+	return s != PipelineRunning && s != PipelineFailed && s != PipelineErrored && s != PipelineSucceeded && s != PipelineCancelled
 }
 
 func (s Status) AsHumanReadableDescription() string {
-	if s == Running || s == Pending {
+	if s == PipelineRunning || s == PipelinePending {
 		return "is " + string(s)
-	} else if s == Failed || s == Errored || s == Succeeded {
+	} else if s == PipelineFailed || s == PipelineErrored || s == PipelineSucceeded || s == PipelineCancelled {
 		return string(s)
 	}
 	return "is in unknown state"

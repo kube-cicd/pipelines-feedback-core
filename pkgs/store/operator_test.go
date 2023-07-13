@@ -18,14 +18,13 @@ func createBreadBookPipeline() *contract.PipelineInfo {
 		"hello-kropotkin",
 		"the-conquest-of-bread",
 		time.Now(),
-		contract.Running,
 		[]contract.PipelineStage{},
-		"https://dashboard.tekton.local/pipeline-some/pipeline",
 		fields.Set{},
 		fields.Set{},
-		func() string {
+		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
+		contract.PipelineInfoWithLogsCollector(func() string {
 			return "Baked!"
-		},
+		}),
 	)
 }
 
@@ -39,14 +38,13 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		"hello-kropotkin",
 		"the-conquest-of-bread",
 		time.Now(),
-		contract.Running,
 		[]contract.PipelineStage{},
-		"https://dashboard.tekton.local/pipeline-some/pipeline",
 		fields.Set{},
 		fields.Set{},
-		func() string {
+		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
+		contract.PipelineInfoWithLogsCollector(func() string {
 			return "Baked!"
-		},
+		}),
 	)
 	for _, _ = range []int{1, 2, 3} {
 		o.CountHowManyTimesKubernetesResourceReceived(firstPipeline)
@@ -61,14 +59,13 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		"hello-francisco-ferrer",
 		"the-barcelona-school",
 		time.Now(),
-		contract.Running,
 		[]contract.PipelineStage{},
-		"https://dashboard.tekton.local/pipeline-some/pipeline",
 		fields.Set{},
 		fields.Set{},
-		func() string {
+		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
+		contract.PipelineInfoWithLogsCollector(func() string {
 			return "Created!"
-		},
+		}),
 	)
 	assert.Equal(t, 1, o.CountHowManyTimesKubernetesResourceReceived(secondPipeline))
 	assert.Equal(t, 2, o.CountHowManyTimesKubernetesResourceReceived(secondPipeline))

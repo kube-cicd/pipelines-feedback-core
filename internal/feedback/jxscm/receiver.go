@@ -245,15 +245,15 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 
 func (jx *Receiver) translateStatus(status contract.Status) scm.State {
 	switch status {
-	case contract.Running:
+	case contract.PipelineRunning:
 		return scm.StateRunning
-	case contract.Pending:
+	case contract.PipelinePending:
 		return scm.StatePending
-	case contract.Succeeded:
+	case contract.PipelineSucceeded:
 		return scm.StateSuccess
-	case contract.Errored:
+	case contract.PipelineErrored:
 		return scm.StateError
-	case contract.Failed:
+	case contract.PipelineFailed:
 		return scm.StateFailure
 	default:
 		return scm.StateUnknown
