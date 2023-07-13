@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jenkins-x/go-scm/scm"
+	"github.com/kube-cicd/pipelines-feedback-core/internal/feedback/jxscm"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract/wiring"
@@ -295,5 +296,5 @@ func (jx *Receiver) createClient(ctx context.Context, data config.Data, pipeline
 	}
 
 	// constructs a client
-	return newClientFromConfig(data, gitToken)
+	return jxscm.NewClientFromConfig(data, gitToken)
 }

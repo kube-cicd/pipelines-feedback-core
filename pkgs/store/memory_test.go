@@ -1,7 +1,7 @@
 package store_test
 
 import (
-	"github.com/kube-cicd/pipelines-feedback-core/internal/store"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

@@ -8,7 +8,6 @@ import (
 	"time"
 )
 import "github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
-import internalstore "github.com/kube-cicd/pipelines-feedback-core/internal/store"
 
 func createBreadBookPipeline() *contract.PipelineInfo {
 	scm, _ := contract.NewSCMContext("https://gitlab.com/aaa/bbb.git")
@@ -29,7 +28,7 @@ func createBreadBookPipeline() *contract.PipelineInfo {
 }
 
 func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
-	o := store.Operator{Store: internalstore.NewMemory()}
+	o := store.Operator{Store: store.NewMemory()}
 	scm, _ := contract.NewSCMContext("https://gitlab.com/aaa/bbb.git")
 
 	firstPipeline := contract.NewPipelineInfo(
@@ -72,7 +71,7 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 }
 
 func TestOperator_RecordEventFiring_WasEventAlreadySent(t *testing.T) {
-	o := store.Operator{Store: internalstore.NewMemory()}
+	o := store.Operator{Store: store.NewMemory()}
 
 	assert.False(t, o.WasEventAlreadySent(*createBreadBookPipeline(), "start"))
 

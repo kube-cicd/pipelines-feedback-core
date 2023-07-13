@@ -1,7 +1,6 @@
 package store
 
 import (
-	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -32,11 +31,11 @@ func (m *Memory) Set(key, value string, ttl int) error {
 func (m *Memory) Get(key string) (string, error) {
 	if entry, ok := m.mem[key]; ok {
 		if entry.expires.Before(time.Now()) {
-			return "", errors.New(store.ErrNotFound)
+			return "", errors.New(ErrNotFound)
 		}
 		return entry.val, nil
 	}
-	return "", errors.New(store.ErrNotFound)
+	return "", errors.New(ErrNotFound)
 }
 
 func NewMemory() *Memory {

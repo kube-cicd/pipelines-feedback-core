@@ -66,7 +66,7 @@ func ensureGHEEndpoint(u string) string {
 	return u
 }
 
-func newClientFromConfig(data config.Data, gitToken string) (*scm.Client, error) {
+func NewClientFromConfig(data config.Data, gitToken string) (*scm.Client, error) {
 	if repoURL := data.GetOrDefault("git-repo-url", ""); repoURL != "" {
 		return factory.FromRepoURL(repoURL)
 	}

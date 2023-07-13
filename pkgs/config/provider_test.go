@@ -3,7 +3,6 @@ package config_test
 import (
 	"context"
 	internalConfig "github.com/kube-cicd/pipelines-feedback-core/internal/config"
-	store2 "github.com/kube-cicd/pipelines-feedback-core/internal/store"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
@@ -112,7 +111,7 @@ func TestConfigurationProvider_FetchSecretKey_FetchesKeyFromKubernetesSecret(t *
 		docStore,
 		logging.NewInternalLogger(),
 		coreV1,
-		store.Operator{Store: store2.NewMemory()},
+		store.Operator{Store: store.NewMemory()},
 		&validator,
 	)
 	assert.Nil(t, err)
@@ -149,7 +148,7 @@ func TestConfigurationProvider_FetchFromFieldOrSecret_FetchesFromSecret(t *testi
 		docStore,
 		logging.NewInternalLogger(),
 		coreV1,
-		store.Operator{Store: store2.NewMemory()},
+		store.Operator{Store: store.NewMemory()},
 		&validator,
 	)
 	assert.Nil(t, err)
@@ -177,7 +176,7 @@ func TestConfigurationProvider_FetchFromFieldOrSecret_FetchesFromConfigKeyFirst(
 		docStore,
 		logging.NewInternalLogger(),
 		coreV1,
-		store.Operator{Store: store2.NewMemory()},
+		store.Operator{Store: store.NewMemory()},
 		&validator,
 	)
 	assert.Nil(t, err)
