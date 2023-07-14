@@ -120,6 +120,7 @@ func (jx *Receiver) InitializeWithContext(sc *wiring.ServiceContext) error {
 	jx.sc.ConfigSchema.Add(config.Schema{
 		Name: "jxscm",
 		AllowedFields: []string{
+			"token",
 			"token-secret-name",
 			"token-secret-key",
 			"git-repo-url",
