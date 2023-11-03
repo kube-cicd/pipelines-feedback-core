@@ -16,6 +16,7 @@ import (
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 var (
@@ -71,9 +72,10 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                        scheme,
-		MetricsBindAddress:            app.MetricsBindAddress,
-		Port:                          9443,
+		Scheme: scheme,
+		Metrics: server.Options{
+			BindAddress: app.MetricsBindAddress,
+		},
 		HealthProbeBindAddress:        app.HealthProbeBindAddress,
 		LeaderElection:                app.LeaderElect,
 		LeaderElectionID:              app.LeaderElectId + ".keskad.pl",
