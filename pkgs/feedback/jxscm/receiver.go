@@ -219,12 +219,16 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 	var prCommentStatusErr error = nil
 
 	if commentStatusErr := jx.updatePRStatusComment(ctx, cfg, pipeline); commentStatusErr != nil {
-		prCommentStatusErr = errors.Wrap(commentStatusErr, "cannot create/update status comment in Pull Request")
+		prCommentStatusErr = errors.Wrap(commentStatusErr, "cannot create/update status comment in PR")
+		jx.sc.Log.Warningf("updatePRStatusComment(): %v", prCommentStatusErr.Error())
 	}
 
 	// Update commit status
 	if client.Repositories != nil {
-		_, _, commitStatusErr = client.Repositories.CreateStatus(ctx, pipeline.GetSCMContext().GetNameWithOrg(),
+		var response *scm.Response
+		var status *scm.Status
+
+		status, response, commitStatusErr = client.Repositories.CreateStatus(ctx, pipeline.GetSCMContext().GetNameWithOrg(),
 			scmCtx.Commit, &scm.StatusInput{
 				State:  overallStatus,
 				Label:  "Pipeline - " + pipeline.GetFullName(),
@@ -232,15 +236,27 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 				Target: pipeline.GetUrl(),
 			},
 		)
+		jx.sc.Log.Debugf("Status: prev=%s, new=%s", status.State.String(), overallStatus)
+
+		if commitStatusErr != nil {
+			var responseTxt []byte
+			_, _ = response.Body.Read(responseTxt)
+			jx.sc.Log.Debugf("SCM gave response: status=%v, body=%v", response.Status, responseTxt)
+
+			for name, value := range response.Header {
+				jx.sc.Log.Debugf("SCM header: %v = %v", name, value)
+			}
+		}
+
 	} else {
 		jx.sc.Log.Warning("jx.client.Repositories is nil. No support for commit status update for this SCM provider in jx go-scm?")
 	}
 
 	if commitStatusErr != nil {
-		return commitStatusErr
+		return errors.Wrap(commitStatusErr, "cannot update commit status")
 	}
 	if prCommentStatusErr != nil {
-		return prCommentStatusErr
+		return errors.Wrap(prCommentStatusErr, "cannot update PR comment")
 	}
 	return nil
 }
