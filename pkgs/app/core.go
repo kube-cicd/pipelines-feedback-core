@@ -112,6 +112,11 @@ func (app *PipelinesFeedbackApp) Run() error {
 		return errors.Wrap(err, "cannot inject dependencies to GenericController")
 	}
 
+	// collect configuration initially right after all components are injected (and registered in ConfigurationProvider)
+	if err := app.ConfigController.CollectInitially(app.ConfigCollector); err != nil {
+		return errors.Wrap(err, "cannot initially collect configuration")
+	}
+
 	// register controllers
 	if err = app.JobController.SetupWithManager(mgr); err != nil {
 		app.Logger.Error(err, "unable to setup job controller", "controller")

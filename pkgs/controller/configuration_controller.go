@@ -48,7 +48,7 @@ func (cc *ConfigurationController) Initialize(kubeConfig *rest.Config, collector
 	}
 
 	cc.client = client.PipelinesfeedbackV1alpha1()
-	return cc.collectInitially(collector)
+	return nil
 }
 
 func (cc *ConfigurationController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -74,7 +74,7 @@ func (cc *ConfigurationController) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(cc)
 }
 
-func (cc *ConfigurationController) collectInitially(collector config.ConfigurationCollector) error {
+func (cc *ConfigurationController) CollectInitially(collector config.ConfigurationCollector) error {
 	docs, err := collector.CollectInitially()
 	if err != nil {
 		return errors.Wrap(err, "cannot initially read configuration")
