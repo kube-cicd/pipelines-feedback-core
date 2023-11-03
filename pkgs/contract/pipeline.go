@@ -260,7 +260,7 @@ func NewSCMContext(repoHttpsUrl string) (JobContext, error) {
 	}
 
 	scm.OrganizationName = nameSplit[1]
-	scm.RepositoryName = strings.TrimSuffix(repoHttpsUrl, nameSplit[2])
+	scm.RepositoryName = strings.TrimSuffix(nameSplit[2], ".git")
 
 	return scm, nil
 }
