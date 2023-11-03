@@ -76,14 +76,14 @@ func (pi PipelineInfo) GetStatus() Status {
 	if cancelled > 0 {
 		return PipelineCancelled
 	}
+	if running > 0 {
+		return PipelineRunning
+	}
 	if pending > 0 {
 		return PipelinePending
 	}
 	if allStages == succeeded {
 		return PipelineSucceeded
-	}
-	if running > 0 {
-		return PipelineRunning
 	}
 	return PipelineErrored
 }
