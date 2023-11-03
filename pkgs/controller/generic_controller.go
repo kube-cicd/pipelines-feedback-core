@@ -68,7 +68,7 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//
 	if err := gc.updateProgress(ctx, retrieved, logger); err != nil {
 		logger.Errorf("cannot update feedback retriever: %s", err.Error())
-		return ctrl.Result{RequeueAfter: time.Second * 30}, errors.Wrap(err, "cannot update feedback receiver")
+		return ctrl.Result{RequeueAfter: time.Second * 5}, nil
 	}
 
 	return ctrl.Result{}, nil
@@ -76,6 +76,11 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 // updateProgress decides when to trigger notification events to the RECEIVER
 func (gc *GenericController) updateProgress(ctx context.Context, retrieved contract.PipelineInfo, logger *logging.InternalLogger) error {
+	for _, stage := range retrieved.GetStages() {
+		logger.Debugf("[%s] %s: %s", retrieved.GetId(), stage.Name, stage.Status.AsHumanReadableDescription())
+	}
+	logger.Debugf("[%s] status: %s", retrieved.GetId(), retrieved.GetStatus().AsHumanReadableDescription())
+
 	// Always update progress
 	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetId())
 	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved); upErr != nil {
