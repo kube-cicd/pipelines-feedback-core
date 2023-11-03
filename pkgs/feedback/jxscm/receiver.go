@@ -16,7 +16,7 @@ import (
 )
 
 const defaultProgressComment = `
-:rocket: The Pipeline {{ .pipeline.GetStatus.AsHumanReadableDescription }} {{ if .pipeline.GetStatus.IsNotStarted }}Not started{{ else if .pipeline.GetStatus.IsRunning }}:hourglass_flowing_sand:{{ else if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
+:rocket: The Pipeline '{{ .pipeline.GetInstanceName }}' {{ .pipeline.GetStatus.AsHumanReadableDescription }} {{ if .pipeline.GetStatus.IsNotStarted }}:timer:{{ else if .pipeline.GetStatus.IsRunning }}:hourglass_flowing_sand:{{ else if .pipeline.GetStatus.IsErroredOrFailed }}:x:{{ else if .pipeline.GetStatus.IsSucceeded }}:white_check_mark:{{ end }}
 --------------------------------------
 
 | Stage | Status |
@@ -24,6 +24,8 @@ const defaultProgressComment = `
 {{- range $stage := .pipeline.GetStages }}
 | {{ $stage.Name }} |  {{ if $stage.Status.IsNotStarted }}Pending{{ else if $stage.Status.IsRunning }}:hourglass_flowing_sand:{{ else if $stage.Status.IsErroredOrFailed }}:x:{{ else if $stage.Status.IsSucceeded }}:white_check_mark:{{ end }}  |
 {{- end }}
+
+{{ if .pipeline.GetUrl }}- [Open in dashboard]({{ .pipeline.GetUrl }}){{ end }}
 `
 
 const defaultFinishedComment = `
@@ -36,6 +38,8 @@ The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.Ge
 {{ .pipeline.GetLogs }}
 ~~~
 {{ end }}
+
+{{ if .pipeline.GetUrl }}- [Open in dashboard]({{ .pipeline.GetUrl }}){{ end }}
 `
 
 const markingBodyPart = `
