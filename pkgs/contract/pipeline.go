@@ -239,7 +239,7 @@ type JobContext struct {
 
 func NewSCMContext(repoHttpsUrl string) (JobContext, error) {
 	scm := JobContext{}
-	scm.RepoHttpsUrl = repoHttpsUrl
+	scm.RepoHttpsUrl = strings.TrimSuffix(repoHttpsUrl, ".git")
 	scm.OrganizationName = ""
 	scm.RepositoryName = ""
 
