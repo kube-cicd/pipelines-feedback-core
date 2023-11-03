@@ -45,7 +45,7 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//
 	// Fetch the object from PipelineInfoProvider
 	//
-	retrieved, retrieveErr := gc.PipelineInfoProvider.ReceivePipelineInfo(ctx, req.Name, req.Namespace)
+	retrieved, retrieveErr := gc.PipelineInfoProvider.ReceivePipelineInfo(ctx, req.Name, req.Namespace, logger)
 	if retrieveErr != nil {
 		// log: not matched
 		if retrieveErr.Error() == provider.ErrNotMatched {
@@ -83,14 +83,14 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 
 	// Always update progress
 	logger.Debugf("GenericController -> UpdateProgress(%s)", retrieved.GetId())
-	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved); upErr != nil {
+	if upErr := gc.FeedbackReceiver.UpdateProgress(ctx, retrieved, logger); upErr != nil {
 		return upErr
 	}
 
 	// Single-time events
 	if retrieved.IsJustCreated() && !retrieved.GetStatus().IsFinished() && !gc.Store.WasEventAlreadySent(retrieved, "created") {
 		logger.Debugf("GenericController -> WhenCreated(%s)", retrieved.GetId())
-		if createErr := gc.FeedbackReceiver.WhenCreated(ctx, retrieved); createErr != nil {
+		if createErr := gc.FeedbackReceiver.WhenCreated(ctx, retrieved, logger); createErr != nil {
 			return createErr
 		}
 		if recErr := gc.Store.RecordEventFiring(retrieved, "created"); recErr != nil {
@@ -99,7 +99,7 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 	}
 	if retrieved.GetStatus().IsRunning() && !gc.Store.WasEventAlreadySent(retrieved, "started") {
 		logger.Debugf("GenericController -> WhenStarted(%s)", retrieved.GetId())
-		if startErr := gc.FeedbackReceiver.WhenStarted(ctx, retrieved); startErr != nil {
+		if startErr := gc.FeedbackReceiver.WhenStarted(ctx, retrieved, logger); startErr != nil {
 			return startErr
 		}
 		if recErr := gc.Store.RecordEventFiring(retrieved, "started"); recErr != nil {
@@ -108,7 +108,7 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 	}
 	if retrieved.GetStatus().IsFinished() && !gc.Store.WasEventAlreadySent(retrieved, "finished") {
 		logger.Debugf("GenericController -> WhenFinished(%s)", retrieved.GetId())
-		if finishErr := gc.FeedbackReceiver.WhenFinished(ctx, retrieved); finishErr != nil {
+		if finishErr := gc.FeedbackReceiver.WhenFinished(ctx, retrieved, logger); finishErr != nil {
 			return finishErr
 		}
 		if recErr := gc.Store.RecordEventFiring(retrieved, "finished"); recErr != nil {

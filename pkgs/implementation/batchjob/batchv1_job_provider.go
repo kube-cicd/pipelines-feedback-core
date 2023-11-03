@@ -45,7 +45,7 @@ func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) 
 }
 
 // ReceivePipelineInfo is tracking batch/v1, kind: Job type objects
-func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name string, namespace string) (contract.PipelineInfo, error) {
+func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name string, namespace string, log *logging.InternalLogger) (contract.PipelineInfo, error) {
 	globalCfg := bjp.confProvider.FetchGlobal("global")
 
 	// find an object
@@ -74,7 +74,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 
 	dashboardUrl, dashboardTplErr := templating.TemplateDashboardUrl(globalCfg.Get("dashboard-url"), job, job.TypeMeta)
 	if dashboardTplErr != nil {
-		bjp.logger.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
+		log.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
 	}
 
 	// logs are lazy-fetched on demand

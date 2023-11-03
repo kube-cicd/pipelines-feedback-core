@@ -93,6 +93,11 @@ func (pi PipelineInfo) GetFullName() string {
 	return pi.namespace + "/" + pi.name + "/" + pi.instanceName
 }
 
+// GetInstanceName is returning execution name, a short name
+func (pi PipelineInfo) GetInstanceName() string {
+	return pi.instanceName
+}
+
 // GetUrl returns a URL to some dashboard, where the pipeline could be looked up
 func (pi PipelineInfo) GetUrl() string {
 	return pi.url

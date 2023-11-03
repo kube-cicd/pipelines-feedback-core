@@ -8,6 +8,7 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract/wiring"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
 	"strconv"
@@ -137,16 +138,16 @@ func (jx *Receiver) InitializeWithContext(sc *wiring.ServiceContext) error {
 	return nil
 }
 
-func (jx *Receiver) WhenCreated(ctx context.Context, pipeline contract.PipelineInfo) error {
+func (jx *Receiver) WhenCreated(ctx context.Context, pipeline contract.PipelineInfo, log *logging.InternalLogger) error {
 	return nil
 }
 
-func (jx *Receiver) WhenStarted(ctx context.Context, pipeline contract.PipelineInfo) error {
+func (jx *Receiver) WhenStarted(ctx context.Context, pipeline contract.PipelineInfo, log *logging.InternalLogger) error {
 	return nil
 }
 
 // WhenFinished is creating a final comment on the PR to make sure user is notified about the final status
-func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.PipelineInfo) error {
+func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.PipelineInfo, log *logging.InternalLogger) error {
 	if pipeline.GetSCMContext().IsTechnicalJob() {
 		return nil
 	}
@@ -167,13 +168,13 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 
 	// Do not send the same comment twice
 	if jx.sc.Store.WasSummaryCommentCreated(pipeline) {
-		jx.sc.Log.Debugf("Skipping update, status already written to SCM for '%s'", pipeline.GetId())
+		log.Debugf("Skipping update, status already written to SCM for '%s'", pipeline.GetId())
 		return nil
 
 	} else {
 		// Fallback - in case there was no cache
 		if jx.findCommentIdByMarking(ctx, markingPart, pipeline, prId, client) != "" {
-			jx.sc.Log.Debugf("Skipping update, status already written to SCM for '%s'", pipeline.GetId())
+			log.Debugf("Skipping update, status already written to SCM for '%s'", pipeline.GetId())
 			return nil
 		}
 	}
@@ -200,7 +201,7 @@ func (jx *Receiver) WhenFinished(ctx context.Context, pipeline contract.Pipeline
 }
 
 // UpdateProgress is keeping commit & PR up-to-date with the progress by creating & updating statuses
-func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.PipelineInfo) error {
+func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.PipelineInfo, log *logging.InternalLogger) error {
 	if pipeline.GetSCMContext().IsTechnicalJob() {
 		return nil
 	}
@@ -220,7 +221,7 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 
 	if commentStatusErr := jx.updatePRStatusComment(ctx, cfg, pipeline); commentStatusErr != nil {
 		prCommentStatusErr = errors.Wrap(commentStatusErr, "cannot create/update status comment in PR")
-		jx.sc.Log.Warningf("updatePRStatusComment(): %v", prCommentStatusErr.Error())
+		log.Warningf("updatePRStatusComment(): %v", prCommentStatusErr.Error())
 	}
 
 	// Update commit status
@@ -236,20 +237,20 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 				Target: pipeline.GetUrl(),
 			},
 		)
-		jx.sc.Log.Debugf("Status: prev=%s, new=%s", status.State.String(), overallStatus)
+		log.Debugf("Status: prev=%s, new=%s", status.State.String(), overallStatus)
 
 		if commitStatusErr != nil {
 			var responseTxt []byte
 			_, _ = response.Body.Read(responseTxt)
-			jx.sc.Log.Debugf("SCM gave response: status=%v, body=%v", response.Status, responseTxt)
+			log.Debugf("SCM gave response: status=%v, body=%v", response.Status, responseTxt)
 
 			for name, value := range response.Header {
-				jx.sc.Log.Debugf("SCM header: %v = %v", name, value)
+				log.Debugf("SCM header: %v = %v", name, value)
 			}
 		}
 
 	} else {
-		jx.sc.Log.Warning("jx.client.Repositories is nil. No support for commit status update for this SCM provider in jx go-scm?")
+		log.Warning("jx.client.Repositories is nil. No support for commit status update for this SCM provider in jx go-scm?")
 	}
 
 	if commitStatusErr != nil {
