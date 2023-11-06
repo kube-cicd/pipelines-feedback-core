@@ -1,6 +1,9 @@
 package contract
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"net/url"
@@ -86,6 +89,16 @@ func (pi PipelineInfo) GetStatus() Status {
 		return PipelineSucceeded
 	}
 	return PipelineErrored
+}
+
+func (pi PipelineInfo) ToHash() string {
+	sum := fmt.Sprintf("summary=%s\n", pi.GetStatus().AsHumanReadableDescription())
+	for _, stage := range pi.stages {
+		sum += fmt.Sprintf("stage=%s,status=%s\n", stage.Name, stage.Status)
+	}
+	hasher := sha256.New()
+	hasher.Write([]byte(sum))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 // GetFullName returns a namespace, object name and its instance name (often uid or generated name)
