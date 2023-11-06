@@ -65,7 +65,7 @@ func (o *Operator) GetLastRecordedPipelineStatus(pipeline contract.PipelineInfo)
 
 func (o *Operator) RecordInfoAboutLastComment(pipeline contract.PipelineInfo, commentId string) {
 	_ = o.Set(pipeline.GetId()+"/PRCommentId", commentId, StatusCacheTtl)
-	_ = o.Set(pipeline.GetId()+"/PRLastStatus", string(pipeline.GetStatus()), StatusCacheTtl)
+	_ = o.Set(pipeline.GetId()+"/PRLastStatus", string(pipeline.GetStatus())+"/"+pipeline.ToHash(), StatusCacheTtl)
 }
 
 func (o *Operator) RecordSummaryCommentCreated(pipeline contract.PipelineInfo) {
