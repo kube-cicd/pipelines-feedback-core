@@ -96,3 +96,17 @@ func (o *Operator) PushConfigSecretKey(namespace string, refKey string, refSecre
 	ident := namespace + "/" + refKey + "/" + refSecretKey
 	_ = o.Set(ident, val, SecretCacheTtl)
 }
+
+func (o *Operator) WasPipelineProcessedAtThisState(retrieved contract.PipelineInfo) bool {
+	ident := retrieved.GetId() + "/LastProcessingStateHash"
+	lastStateHash, err := o.Get(ident)
+	if err != nil && err.Error() == ErrNotFound {
+		return false
+	}
+	return lastStateHash == retrieved.ToHash()
+}
+
+func (o *Operator) RecordPipelineStateProcessed(retrieved contract.PipelineInfo) {
+	ident := retrieved.GetId() + "/LastProcessingStateHash"
+	_ = o.Set(ident, retrieved.ToHash(), StatusCacheTtl)
+}

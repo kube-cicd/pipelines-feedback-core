@@ -65,6 +65,14 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	logger.Debugf("count(%s) = %v", req.Name, eventNum)
 	retrieved.SetRetrievalCount(eventNum)
 
+	// do not trigger any updates if the Pipeline in current state was already processed
+	if gc.Store.WasPipelineProcessedAtThisState(retrieved) {
+		logger.Debug("(Cached) Pipeline was already processed at exactly this state, skipping")
+		return ctrl.Result{}, nil
+	}
+
+	// todo: failure retry counter. Limit allowed failures
+
 	//
 	// Notify the Feedback Receiver
 	//
@@ -73,6 +81,7 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{RequeueAfter: time.Second * 5}, nil
 	}
 
+	gc.Store.RecordPipelineStateProcessed(retrieved)
 	return ctrl.Result{}, nil
 }
 
