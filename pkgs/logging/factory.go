@@ -16,6 +16,10 @@ func CreateLogger(isDebugLevel bool) *InternalLogger {
 		logrus.SetLevel(logrus.DebugLevel)
 		instance.SetLevel(logrus.DebugLevel)
 	}
+	instance.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
+
 	return &InternalLogger{instance.WithContext(context.TODO())}
 }
 
