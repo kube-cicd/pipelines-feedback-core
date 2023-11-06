@@ -11,12 +11,14 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/provider"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"strings"
 	"time"
 )
 
@@ -119,9 +121,23 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 }
 
 func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
+	hasLabel := func(obj v1.Object) bool {
+		labels := obj.GetLabels()
+		if val, ok := labels[contract.LabelFeedbackEnabled]; ok {
+			return strings.Trim(strings.ToLower(val), " ") != "false"
+		}
+		return false
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(gc.ObjectType).
 		WithEventFilter(predicate.Funcs{
+			UpdateFunc: func(updateEvent event.UpdateEvent) bool {
+				return hasLabel(updateEvent.ObjectNew)
+			},
+			CreateFunc: func(createEvent event.CreateEvent) bool {
+				return hasLabel(createEvent.Object)
+			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
 				return false
 			},

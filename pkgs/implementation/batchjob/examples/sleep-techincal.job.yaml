@@ -4,6 +4,8 @@ kind: Job
 metadata:
     name: sleep-technical
     namespace: default
+    labels:
+        pipelinesfeedback.keskad.pl/enabled: "true"
     annotations:
         pipelinesfeedback.keskad.pl/technical-job: "backup"
 spec:

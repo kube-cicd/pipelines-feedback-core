@@ -4,6 +4,8 @@ kind: Job
 metadata:
     name: sleep
     namespace: default
+    labels:
+        pipelinesfeedback.keskad.pl/enabled: "true"
     annotations:
         pipelinesfeedback.keskad.pl/https-repo-url: "https://github.com/keskad/jx-gitops"
         pipelinesfeedback.keskad.pl/commit: "76ea7c746d4e4ac42c44bf72946d3b0d399553dd"
