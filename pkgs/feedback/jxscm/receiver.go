@@ -218,44 +218,17 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 
 	scmCtx := pipeline.GetSCMContext()
 	ourStatus := pipeline.GetStatus()
-	overallStatus := jx.translateStatus(ourStatus)
+	overallStatus := jx.translateStatus(ourStatus, cfg)
 
-	var commitStatusErr error = nil
+	// Update status in PR/MR comment
 	var prCommentStatusErr error = nil
-
 	if commentStatusErr := jx.updatePRStatusComment(ctx, cfg, pipeline); commentStatusErr != nil {
 		prCommentStatusErr = errors.Wrap(commentStatusErr, "cannot create/update status comment in PR")
 		log.Warningf("updatePRStatusComment(): %v", prCommentStatusErr.Error())
 	}
 
-	// Update commit status
-	if client.Repositories != nil {
-		var response *scm.Response
-		var status *scm.Status
-
-		status, response, commitStatusErr = client.Repositories.CreateStatus(ctx, pipeline.GetSCMContext().GetNameWithOrg(),
-			scmCtx.Commit, &scm.StatusInput{
-				State:  overallStatus,
-				Label:  "Pipeline - " + pipeline.GetFullName(),
-				Desc:   ourStatus.AsHumanReadableDescription(),
-				Target: pipeline.GetUrl(),
-			},
-		)
-		log.Debugf("Status: prev=%s, new=%s", status.State.String(), overallStatus)
-
-		if commitStatusErr != nil {
-			var responseTxt []byte
-			_, _ = response.Body.Read(responseTxt)
-			log.Debugf("SCM gave response: status=%v, body=%v", response.Status, responseTxt)
-
-			for name, value := range response.Header {
-				log.Debugf("SCM header: %v = %v", name, value)
-			}
-		}
-
-	} else {
-		log.Warning("jx.client.Repositories is nil. No support for commit status update for this SCM provider in jx go-scm?")
-	}
+	// Update Commit status
+	commitStatusErr := jx.updateCommitStatus(ctx, cfg, client, overallStatus, ourStatus, scmCtx, pipeline, log)
 
 	if commitStatusErr != nil {
 		return errors.Wrap(commitStatusErr, "cannot update commit status")
@@ -266,7 +239,48 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 	return nil
 }
 
-func (jx *Receiver) translateStatus(status contract.Status) scm.State {
+func (jx *Receiver) updateCommitStatus(ctx context.Context, cfg config.Data, client *scm.Client, overallStatus scm.State, ourStatus contract.Status,
+	scmCtx contract.JobContext, pipeline contract.PipelineInfo, log *logging.InternalLogger) error {
+
+	var commitStatusErr error = nil
+	if client.Repositories != nil {
+		var response *scm.Response
+		_, response, commitStatusErr = client.Repositories.CreateStatus(ctx, pipeline.GetSCMContext().GetNameWithOrg(),
+			scmCtx.Commit, &scm.StatusInput{
+				State:  overallStatus,
+				Label:  "Pipeline - " + pipeline.GetFullName(),
+				Desc:   ourStatus.AsHumanReadableDescription(),
+				Target: pipeline.GetUrl(),
+			},
+		)
+
+		if commitStatusErr != nil {
+			// <Gitlab fix>
+			// https://github.com/kube-cicd/pipelines-feedback-core/issues/8
+			if response.Status == 400 && cfg.Get("git-kind") == "gitlab" {
+				if ourStatus == contract.PipelinePending || ourStatus == contract.PipelineRunning {
+					log.Debug("Mitigating Gitlab behavior. Cannot send a Pending/Running status twice")
+					commitStatusErr = nil
+				}
+			}
+			// <End of Gitlab fix>
+
+			var responseTxt []byte
+			_, _ = response.Body.Read(responseTxt)
+			log.Debugf("SCM gave response: status=%v, body=%v", response.Status, responseTxt)
+
+			for name, value := range response.Header {
+				log.Debugf("SCM header: %v = %v", name, value)
+			}
+		}
+	} else {
+		log.Warning("jx.client.Repositories is nil. No support for commit status update for this SCM provider in jx go-scm?")
+	}
+
+	return commitStatusErr
+}
+
+func (jx *Receiver) translateStatus(status contract.Status, cfg config.Data) scm.State {
 	switch status {
 	case contract.PipelineRunning:
 		return scm.StateRunning
