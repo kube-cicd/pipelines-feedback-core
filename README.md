@@ -27,7 +27,7 @@ Roadmap
 
 **First beta release - 0.2:**
 - [ ] Support for optional arguments in API for easier future interface extension (https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis)
-- [ ] Support Redis as a cache store
+- [x] Support Redis as a cache store
 - [ ] Support for Matrix (Federated, Secure, Slack-like Messenger)
 
 **First stable release - 1.0:**

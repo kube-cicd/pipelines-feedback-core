@@ -1,8 +1,8 @@
 package config_test
 
 import (
-	intConfig "github.com/kube-cicd/pipelines-feedback-core/internal/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/fake"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -11,7 +11,7 @@ import (
 func TestData_GetOrDefault(t *testing.T) {
 	cfg := config.NewData("jxscm", map[string]string{
 		"hello": "bread",
-	}, &intConfig.NullValidator{}, &logging.InternalLogger{})
+	}, &fake.NullValidator{}, &logging.InternalLogger{})
 
 	assert.Equal(t, "my-default", cfg.GetOrDefault("this-key-does-not-exist", "my-default"))
 	assert.Equal(t, "bread", cfg.GetOrDefault("hello", "something"))

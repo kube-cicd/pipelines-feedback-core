@@ -24,7 +24,7 @@ type BatchV1JobProvider struct {
 	coreV1Client  *v1core.CoreV1Client
 	store         *store.Operator
 	logger        *logging.InternalLogger
-	confProvider  *config.ConfigurationProvider
+	confProvider  config.ConfigurationProviderInterface
 }
 
 func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) error {
@@ -40,7 +40,7 @@ func (bjp *BatchV1JobProvider) InitializeWithContext(sc *wiring.ServiceContext) 
 	bjp.coreV1Client = coreClient
 	bjp.store = sc.Store
 	bjp.logger = sc.Log
-	bjp.confProvider = &sc.Config
+	bjp.confProvider = sc.Config
 	return nil
 }
 

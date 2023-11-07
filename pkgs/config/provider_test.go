@@ -6,6 +6,7 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
+	fake2 "github.com/kube-cicd/pipelines-feedback-core/pkgs/fake"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ func TestConfigurationProvider_FetchContextual(t *testing.T) {
 		"jxscm.kropotkin": "The Bread Book",
 	}
 
-	validator := internalConfig.NullValidator{}
+	validator := fake2.NullValidator{}
 	docStore := internalConfig.CreateIndexedDocumentStore(&validator)
 	_ = docStore.Push(&pfc)
 
@@ -55,7 +56,7 @@ func TestConfigurationProvider_FetchGlobal(t *testing.T) {
 		"jxscm.kropotkin": "The Bread Book",
 	}
 
-	validator := internalConfig.NullValidator{}
+	validator := fake2.NullValidator{}
 	docStore := internalConfig.CreateIndexedDocumentStore(&validator)
 	_ = docStore.Push(&pfc)
 
@@ -86,7 +87,7 @@ func TestConfigurationProvider_FetchGlobal(t *testing.T) {
 }
 
 func TestConfigurationProvider_FetchSecretKey_FetchesKeyFromKubernetesSecret(t *testing.T) {
-	validator := internalConfig.NullValidator{}
+	validator := fake2.NullValidator{}
 	docStore := internalConfig.CreateIndexedDocumentStore(&validator)
 
 	// mock Kubernetes kind: Secrets
@@ -123,7 +124,7 @@ func TestConfigurationProvider_FetchSecretKey_FetchesKeyFromKubernetesSecret(t *
 }
 
 func TestConfigurationProvider_FetchFromFieldOrSecret_FetchesFromSecret(t *testing.T) {
-	validator := internalConfig.NullValidator{}
+	validator := fake2.NullValidator{}
 	docStore := internalConfig.CreateIndexedDocumentStore(&validator)
 
 	// mock Kubernetes kind: Secrets
@@ -166,7 +167,7 @@ func TestConfigurationProvider_FetchFromFieldOrSecret_FetchesFromSecret(t *testi
 }
 
 func TestConfigurationProvider_FetchFromFieldOrSecret_FetchesFromConfigKeyFirst(t *testing.T) {
-	validator := internalConfig.NullValidator{}
+	validator := fake2.NullValidator{}
 	docStore := internalConfig.CreateIndexedDocumentStore(&validator)
 
 	kubernetesClient := fake.NewSimpleClientset()

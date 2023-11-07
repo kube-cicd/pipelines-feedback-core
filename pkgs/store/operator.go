@@ -19,23 +19,12 @@ type Operator struct {
 }
 
 // CountHowManyTimesKubernetesResourceReceived returns count and increases the counter for given resource
-func (o *Operator) CountHowManyTimesKubernetesResourceReceived(retrieved *contract.PipelineInfo) int {
-	ident := retrieved.GetId() + "/counter"
-	existing, err := o.Get(ident)
-	counter := 0
+func (o *Operator) CountHowManyTimesKubernetesResourceReceived(pipeline *contract.PipelineInfo) int {
+	return o.count(*pipeline, "RetrievalCounter")
+}
 
-	if err == nil {
-		c, cErr := strconv.Atoi(existing)
-		if cErr != nil {
-			c = 0
-		}
-		counter = c
-	}
-	counter += 1
-	if setErr := o.Set(ident, fmt.Sprintf("%v", counter), StatusCacheTtl); setErr != nil {
-		logrus.Error("cannot save to store", setErr)
-	}
-	return counter
+func (o *Operator) CountHowManyTimesUpdateFailed(pipeline contract.PipelineInfo) int {
+	return o.count(pipeline, "FailureCounter")
 }
 
 func (o *Operator) WasEventAlreadySent(retrieved contract.PipelineInfo, eventType string) bool {
@@ -97,16 +86,45 @@ func (o *Operator) PushConfigSecretKey(namespace string, refKey string, refSecre
 	_ = o.Set(ident, val, SecretCacheTtl)
 }
 
-func (o *Operator) WasPipelineProcessedAtThisState(retrieved contract.PipelineInfo) bool {
-	ident := retrieved.GetId() + "/LastProcessingStateHash"
+func (o *Operator) WasPipelineProcessedAtThisState(pipeline contract.PipelineInfo) bool {
+	ident := pipeline.GetId() + "/LastProcessingStateHash"
 	lastStateHash, err := o.Get(ident)
 	if err != nil && err.Error() == ErrNotFound {
 		return false
 	}
-	return lastStateHash == retrieved.ToHash()
+	return lastStateHash == pipeline.ToHash()
 }
 
-func (o *Operator) RecordPipelineStateProcessed(retrieved contract.PipelineInfo) {
-	ident := retrieved.GetId() + "/LastProcessingStateHash"
-	_ = o.Set(ident, retrieved.ToHash(), StatusCacheTtl)
+func (o *Operator) RecordPipelineStateProcessed(pipeline contract.PipelineInfo) {
+	ident := pipeline.GetId() + "/LastProcessingStateHash"
+	_ = o.Set(ident, pipeline.ToHash(), StatusCacheTtl)
+}
+
+func (o *Operator) count(pipeline contract.PipelineInfo, key string) int {
+	ident := pipeline.GetId() + "/" + key
+	existing, err := o.Get(ident)
+	counter := 0
+
+	if err == nil {
+		c, cErr := strconv.Atoi(existing)
+		if cErr != nil {
+			c = 0
+		}
+		counter = c
+	}
+	counter += 1
+	if setErr := o.Set(ident, fmt.Sprintf("%v", counter), StatusCacheTtl); setErr != nil {
+		logrus.Error("cannot save to store", setErr)
+	}
+	return counter
+}
+
+func (o *Operator) HowManyTimesErrored(pipeline contract.PipelineInfo) int {
+	ident := pipeline.GetId() + "/FailureCounter"
+	existing, _ := o.Get(ident)
+	if existing == "" {
+		return 0
+	}
+	count, _ := strconv.Atoi(existing)
+	return count
 }

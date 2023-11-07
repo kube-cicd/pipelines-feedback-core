@@ -47,5 +47,10 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	command.Flags().BoolVarP(&app.LeaderElect, "leader-elect", "l", false, "Enable leader election")
 	command.Flags().StringVarP(&app.LeaderElectId, "instance-id", "", "aSaMKO0", "Leader election ID (if running multiple controller instances with different configuration)")
 
+	// error handling
+	command.Flags().IntVarP(&app.DelayAfterErrorNum, "requeue-delay-after-error-count", "", 100, "Delay reconciliation of this resource, after it failed X times")
+	command.Flags().IntVarP(&app.RequeueDelaySecs, "requeue-delay-secs", "", 15, "After (--requeue-delay-after-error-count) failed retries every reconciliation of this resource should be delayed by X seconds")
+	command.Flags().IntVarP(&app.StopProcessingAfterErrorNum, "requeue-stop-after-error-count", "", 150, "Stop processing resource after X failed retries")
+
 	return command
 }

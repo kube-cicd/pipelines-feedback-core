@@ -5,4 +5,5 @@ import "github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback
 type Validator interface {
 	ValidateRequestedEntry(group string, key string) error
 	ValidateConfig(data v1alpha1.Data) error
+	Add(schema Schema)
 }

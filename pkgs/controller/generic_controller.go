@@ -39,10 +39,37 @@ type GenericController struct {
 	kubeConfig *rest.Config
 
 	logger *logging.InternalLogger
+
+	// error handling
+	DelayAfterErrorNum          int
+	RequeueDelaySecs            int
+	StopProcessingAfterErrorNum int
+}
+
+func (gc *GenericController) getDelayAfterErrorNum() int {
+	if gc.DelayAfterErrorNum == 0 {
+		return 100
+	}
+	return gc.DelayAfterErrorNum
+}
+
+func (gc *GenericController) getRequeueDelaySecs() int {
+	if gc.RequeueDelaySecs == 0 {
+		return 15
+	}
+	return gc.RequeueDelaySecs
+}
+
+func (gc *GenericController) getStopProcessingAfterErrorNum() int {
+	if gc.StopProcessingAfterErrorNum == 0 {
+		return 150
+	}
+	return gc.StopProcessingAfterErrorNum
 }
 
 func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := logging.CreateK8sContextualLogger(ctx, gc.logger, req)
+	requeueTime := time.Second * 5
 
 	//
 	// Fetch the object from PipelineInfoProvider
@@ -65,20 +92,35 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	logger.Debugf("count(%s) = %v", req.Name, eventNum)
 	retrieved.SetRetrievalCount(eventNum)
 
-	// do not trigger any updates if the Pipeline in current state was already processed
+	//
+	// Errors: Make errors not processed infinitely
+	//
+	errorCount := gc.Store.HowManyTimesErrored(retrieved)
+	if errorCount >= gc.getDelayAfterErrorNum() && errorCount < gc.getStopProcessingAfterErrorNum() {
+		logger.Warningf("Setting requeue time to %ds", gc.getRequeueDelaySecs())
+		requeueTime = time.Second * time.Duration(gc.getRequeueDelaySecs())
+
+	} else if errorCount >= gc.getStopProcessingAfterErrorNum() {
+		logger.Errorf("Stopping reconciliation for this object after %ds retries", errorCount)
+		return ctrl.Result{}, nil
+	}
+
+	//
+	// Cache: Do not trigger any updates if the Pipeline in current state was already processed
+	//
 	if gc.Store.WasPipelineProcessedAtThisState(retrieved) {
 		logger.Debug("(Cached) Pipeline was already processed at exactly this state, skipping")
 		return ctrl.Result{}, nil
 	}
-
-	// todo: failure retry counter. Limit allowed failures
 
 	//
 	// Notify the Feedback Receiver
 	//
 	if err := gc.updateProgress(ctx, retrieved, logger); err != nil {
 		logger.Errorf("cannot update feedback retriever: %s", err.Error())
-		return ctrl.Result{RequeueAfter: time.Second * 5}, nil
+		gc.Store.CountHowManyTimesUpdateFailed(retrieved)
+
+		return ctrl.Result{RequeueAfter: requeueTime}, nil
 	}
 
 	gc.Store.RecordPipelineStateProcessed(retrieved)
@@ -156,7 +198,7 @@ func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 
 // InjectDependencies is wiring dependencies to all services
 func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, kubeConfig *rest.Config,
-	logger *logging.InternalLogger, configProvider config.ConfigurationProvider, cfgSchema *config.SchemaValidator) error {
+	logger *logging.InternalLogger, configProvider config.ConfigurationProviderInterface, cfgSchema config.Validator) error {
 
 	gc.recorder = recorder
 	gc.kubeConfig = kubeConfig

@@ -13,11 +13,18 @@ import (
 	"strings"
 )
 
+type ConfigurationProviderInterface interface {
+	FetchContextual(component string, namespace string, pipeline contract.PipelineInfo) Data
+	FetchGlobal(component string) Data
+	FetchSecretKey(ctx context.Context, name string, namespace string, key string, cache bool) (string, error)
+	FetchFromFieldOrSecret(ctx context.Context, data *Data, namespace string, fieldKey string, referenceKey string, referenceSecretNameKey string) (string, error)
+}
+
 // NewConfigurationProvider is a constructor
 func NewConfigurationProvider(docStore config.IndexedDocumentStore, logger *logging.InternalLogger,
-	client v1.CoreV1Interface, kvStore store.Operator, cfgSchema Validator) (ConfigurationProvider, error) {
+	client v1.CoreV1Interface, kvStore store.Operator, cfgSchema Validator) (ConfigurationProviderInterface, error) {
 
-	return ConfigurationProvider{
+	return &ConfigurationProvider{
 		docStore:      docStore,
 		logger:        logger,
 		secretsClient: client,

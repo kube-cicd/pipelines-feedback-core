@@ -18,7 +18,7 @@ import (
 
 // ConfigurationController is reconciling CRD that provides configuration
 type ConfigurationController struct {
-	Provider config.ConfigurationProvider
+	Provider config.ConfigurationProviderInterface
 	docs     configinternal.IndexedDocumentStore
 	client   pipelinesfeedbackv1alpha1.PipelinesfeedbackV1alpha1Interface
 	logger   *logging.InternalLogger

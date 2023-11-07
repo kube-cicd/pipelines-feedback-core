@@ -3,12 +3,13 @@ package config_test
 import (
 	"github.com/kube-cicd/pipelines-feedback-core/internal/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/fake"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestIndexedDocumentStoreFlow_Namespaced(t *testing.T) {
-	store := config.CreateIndexedDocumentStore(&config.NullValidator{})
+	store := config.CreateIndexedDocumentStore(&fake.NullValidator{})
 
 	// No document stored yet
 	assert.Empty(t, store.GetForNamespace("social"))
@@ -47,7 +48,7 @@ func TestIndexedDocumentStoreFlow_Namespaced(t *testing.T) {
 }
 
 func TestIndexedDocumentStoreFlow_ClusterScope(t *testing.T) {
-	store := config.CreateIndexedDocumentStore(&config.NullValidator{})
+	store := config.CreateIndexedDocumentStore(&fake.NullValidator{})
 
 	// Namespace: social
 	pfc := v1alpha1.NewPFConfig()

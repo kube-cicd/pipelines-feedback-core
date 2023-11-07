@@ -41,6 +41,11 @@ type PipelinesFeedbackApp struct {
 	CustomFeedbackReceiver string
 	CustomConfigCollector  string
 
+	// error handling
+	DelayAfterErrorNum          int
+	RequeueDelaySecs            int
+	StopProcessingAfterErrorNum int
+
 	// Feedback receivers available to choose by the user. Falls back to default, embedded list if not specified
 	AvailableFeedbackReceivers []feedback.Receiver
 
