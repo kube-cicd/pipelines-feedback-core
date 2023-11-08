@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"os"
 	"testing"
 )
 
@@ -24,10 +25,11 @@ func TestRedis_Flow(t *testing.T) {
 		Started:          true,
 	})
 	assert.Nil(t, err)
-	_, ipErr := container.ContainerIP(ctx)
+	ip, ipErr := container.ContainerIP(ctx)
 	assert.Nil(t, ipErr)
 
 	adapter := NewRedis()
+	os.Setenv("REDIS_HOST", ip+":6379")
 	adapter.Initialize()
 
 	//
