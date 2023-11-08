@@ -52,6 +52,9 @@ metadata:
     name: keskad-sample-1
     namespace: team-1
 spec:
+    #jobDiscovery: {}  # catch all jobs
+    
+    # filter jobs by label selector
     jobDiscovery:
         # https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#resources-that-support-set-based-requirements
         labelSelector:
