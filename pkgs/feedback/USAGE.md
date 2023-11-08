@@ -7,9 +7,13 @@ Configures a connection to external system which will act as a Feedback Receiver
 - GIT: Update commit status
 - JIRA: Update release info
 
+```bash
+# select an adapter via commandline switch
+-f, --feedback-receiver string              Sets a FeedbackReceiver (default "jxscm")
+```
 
-jx-scm
-------
+jxscm
+-----
 
 Jenkins X go-scm library provides a support for multiple GIT servers like Gitlab.com, Gitlab Self-hosted, GitHub, Gitea self-hosted, Bitbucket.
 JX-SCM is configured via `kind: PFConfig` or using a JSON loaded locally at controller startup.
