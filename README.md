@@ -57,3 +57,10 @@ This repository contains a exemplary and fully functional implementation for bas
 -----------
 
 [See development API for developing integrations or whole custom controllers](./DEVELOPMENT.md)
+
+[Usage](./USAGE.md)
+-------
+
+For end users - `pipelines-feedback-core` is an opinionated framework, so the usage could be different depending on the controller you are going to use.
+
+Check [generic usage](./USAGE.md) tips for common parts of every controller.
