@@ -1,7 +1,12 @@
 Generic usage tips
 ==================
 
-**Pipelines Feedback** can integrate any CI/CD with any external system to report Pipelines status into. Please choose an implementation you wish to use.
+**Pipelines Feedback** can integrate any CI/CD with any external system to report Pipelines status into.
+
+Feedback Provider (CI/CD system - source of Pipelines execution knowledge)
+-----------------
+
+Please choose an implementation you wish to use.
 
 **Known implementations:**
 - [For Tekton Pipelines](https://github.com/kube-cicd/pipelines-feedback-tekton)
@@ -10,5 +15,5 @@ Generic usage tips
 [Choosing Store type](./pkgs/store/README.md)
 -------------------
 
-[Configuring Feedback Provider (external system link)](./pkgs/feedback/USAGE.md)
+[Configuring Feedback Receiver (external system link)](./pkgs/feedback/USAGE.md)
 ---------------------

@@ -12,6 +12,13 @@ Configures a connection to external system which will act as a Feedback Receiver
 -f, --feedback-receiver string              Sets a FeedbackReceiver (default "jxscm")
 ```
 
+```yaml
+# helm values
+controller:
+    adapters:
+        feedbackReceiver: jxscm
+```
+
 jxscm
 -----
 

@@ -11,6 +11,16 @@ Choosing a store
 -s, --store string                          Sets a Store adapter (default "redis")
 ```
 
+```yaml
+# helm values
+controller:
+    adapters:
+        store: redis
+    deployment:
+        env:
+            REDIS_HOST: "redis:6379"
+```
+
 Memory
 ------
 
