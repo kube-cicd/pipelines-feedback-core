@@ -3,7 +3,6 @@ package cli
 import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/app"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
@@ -19,26 +18,17 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	app.CustomConfigCollector = ""
 
 	//
-	// FeedbackReceiver and ConfigCollector can be enforced by the controller.
+	// FeedbackReceiver, Store and ConfigCollector can be enforced by the controller.
 	// When it is not enforced, then the user can select an implementation
 	//
 	if app.JobController.FeedbackReceiver == nil {
-		available := ""
-		if app.AvailableFeedbackReceivers != nil {
-			for _, option := range app.AvailableFeedbackReceivers {
-				available += option.GetImplementationName() + ", "
-			}
-		}
-		command.Flags().StringVarP(&app.CustomFeedbackReceiver, "feedback-receiver", "f", "jxscm", "Sets a FeedbackReceiver (possible options: "+strings.TrimRight(available, ", ")+")")
+		command.Flags().StringVarP(&app.CustomFeedbackReceiver, "feedback-receiver", "f", "jxscm", "Sets a FeedbackReceiver")
 	}
 	if app.ConfigCollector == nil {
-		available := ""
-		if app.AvailableConfigCollectors != nil {
-			for _, option := range app.AvailableConfigCollectors {
-				available += option.GetImplementationName() + ", "
-			}
-		}
-		command.Flags().StringVarP(&app.CustomConfigCollector, "config-provider", "c", "local", "Sets a ConfigCollector (possible options: "+strings.TrimRight(available, ", ")+" - possible to set multiple, comma separated, without spaces)")
+		command.Flags().StringVarP(&app.CustomConfigCollector, "config-provider", "c", "local", "Sets a ConfigCollector - possible to set multiple, comma separated, without spaces)")
+	}
+	if app.JobController.Store.Store == nil {
+		command.Flags().StringVarP(&app.CustomStore, "store", "s", "redis", "Sets a Store adapter")
 	}
 
 	command.Flags().BoolVarP(&app.Debug, "debug", "v", false, "Increase verbosity to the debug level")

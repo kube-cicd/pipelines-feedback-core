@@ -38,6 +38,17 @@ func (m *Memory) Get(key string) (string, error) {
 	return "", errors.New(ErrNotFound)
 }
 
+func (m *Memory) CanHandle(adapterName string) bool {
+	return adapterName == m.GetImplementationName()
+}
+func (m *Memory) GetImplementationName() string {
+	return "memory"
+}
+
+func (m *Memory) Initialize() error {
+	return nil
+}
+
 func NewMemory() *Memory {
 	return &Memory{mem: make(map[string]MemEntry)}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/feedback"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/feedback/jxscm"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -39,6 +40,7 @@ type PipelinesFeedbackApp struct {
 	LeaderElectId          string
 
 	CustomFeedbackReceiver string
+	CustomStore            string
 	CustomConfigCollector  string
 
 	// error handling
@@ -48,6 +50,9 @@ type PipelinesFeedbackApp struct {
 
 	// Feedback receivers available to choose by the user. Falls back to default, embedded list if not specified
 	AvailableFeedbackReceivers []feedback.Receiver
+
+	// Stores available to pick by the user
+	AvailableStores []store.Store
 
 	// Config providers available to choose by the user. Falls back to default, embedded list if not specified
 	AvailableConfigCollectors []config.ConfigurationCollector
@@ -66,6 +71,9 @@ func (app *PipelinesFeedbackApp) Run() error {
 		return err
 	}
 	if err := app.populateConfigCollector(); err != nil {
+		return err
+	}
+	if err := app.populateStoreAdapter(); err != nil {
 		return err
 	}
 
@@ -199,6 +207,26 @@ func (app *PipelinesFeedbackApp) populateConfigCollector() error {
 	app.ConfigCollector = config.CreateMultipleCollector(collectors, app.Logger)
 	app.ConfigCollector.SetLogger(app.Logger)
 	return nil
+}
+
+func (app *PipelinesFeedbackApp) populateStoreAdapter() error {
+	if app.CustomStore == "" {
+		return nil
+	}
+	if app.AvailableStores == nil {
+		app.AvailableStores = []store.Store{
+			store.NewMemory(),
+			store.NewRedis(),
+		}
+	}
+	for _, pluggable := range app.AvailableStores {
+		if pluggable.CanHandle(app.CustomStore) {
+			app.JobController.Store = store.Operator{Store: pluggable}
+			app.Logger.Infof("Initializing store adapter '%s'", pluggable.GetImplementationName())
+			return app.JobController.Store.Initialize()
+		}
+	}
+	return errors.New("unrecognized store type")
 }
 
 func createKubeConfiguration(kubeconfig string) (*rest.Config, error) {

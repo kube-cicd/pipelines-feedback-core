@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 	"os"
 	"strconv"
@@ -21,10 +22,21 @@ func (r *Redis) Set(key, value string, ttl int) error {
 }
 
 func (r *Redis) Get(key string) (string, error) {
-	return r.client.Get(context.TODO(), key).Result()
+	fetch := r.client.Get(context.TODO(), key)
+	if fetch.Err() == redis.Nil {
+		return "", errors.New(ErrNotFound)
+	}
+	return fetch.Result()
 }
 
-func NewRedis() *Redis {
+func (r *Redis) CanHandle(adapterName string) bool {
+	return adapterName == r.GetImplementationName()
+}
+func (r *Redis) GetImplementationName() string {
+	return "redis"
+}
+
+func (r *Redis) Initialize() error {
 	redisHost := os.Getenv("REDIS_HOST")
 	if redisHost == "" {
 		redisHost = "localhost:6379"
@@ -34,12 +46,14 @@ func NewRedis() *Redis {
 		redisDB = "0" // use default DB
 	}
 	redisDBi, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+	r.client = redis.NewClient(&redis.Options{
+		Addr:     redisHost,
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       redisDBi,
+	})
+	return nil
+}
 
-	return &Redis{
-		redis.NewClient(&redis.Options{
-			Addr:     redisHost,
-			Password: os.Getenv("REDIS_PASSWORD"),
-			DB:       redisDBi,
-		}),
-	}
+func NewRedis() *Redis {
+	return &Redis{}
 }
