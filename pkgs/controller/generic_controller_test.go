@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-func TestGenericController_ReconcileWithRetries(t *testing.T) {
+func TestGenericController_ReconcileWithDelayedRetries(t *testing.T) {
 	pipeline := contract.NewPipelineInfo(
 		contract.JobContext{
 			Commit:           "123",
