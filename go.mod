@@ -6,8 +6,9 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/jenkins-x/go-scm v1.14.19
 	github.com/pkg/errors v0.9.1
+	github.com/redis/go-redis/v9 v9.3.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/oauth2 v0.13.0
 	k8s.io/api v0.28.3
@@ -35,7 +36,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -56,7 +56,6 @@ require (
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
-	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/shurcooL/githubv4 v0.0.0-20190718010115-4ba037080260 // indirect
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
