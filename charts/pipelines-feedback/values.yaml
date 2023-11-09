@@ -1,0 +1,77 @@
+
+controller:
+    adapters:
+        config: local
+        feedbackReceiver: jxscm
+        store: redis
+
+    tweaks:
+        requeueDelayAfterErrorCount: "100"
+        requeueDelaySecs: "15"
+        requeueStopAfterErrorCount: "150"
+
+    autoscaling:
+        enabled: false
+        initialReplicaCount: 1
+        minReplicas: 1
+        maxReplicas: 100
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
+
+    service:
+        type: ClusterIP
+        port: 8081
+
+    serviceAccount:
+        name: pipelines-feedback
+        create: true
+        annotations: {}
+
+    deployment:
+        image:
+            repository: ghcr.io/kube-cicd/pipelines-feedback-kindjob
+            tag: "latest"
+            pullPolicy: IfNotPresent
+        annotations: {}
+        labels: {}
+        terminationGracePeriodSeconds: 10
+        imagePullSecrets: {}
+        podSecurityContext:
+            capabilities:
+                drop: [ "ALL" ]
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+        securityContext:
+            capabilities:
+                drop: [ "ALL" ]
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+        resources:
+            limits:
+                cpu: "1"
+                memory: 512Mi
+            requests:
+                cpu: "0.2"
+                memory: 64Mi
+        nodeSelector: {}
+        affinity: {}
+        tolerations: []
+        health:
+            liveness:
+                enabled: true
+                attributes:
+                    failureThreshold: 1
+            readiness:
+                enabled: true
+                attributes: {}
+        secrets:
+            name: ""
+        env:
+            REDIS_HOST: "redis:6379"
+
+rbac:
+    # optionally limit controller's permissions to be able to reach only secrets with specified name
+    resourceNames: []
+
+    # optionally limit RBAC to those namespaces
+    bindToNamespaces: []

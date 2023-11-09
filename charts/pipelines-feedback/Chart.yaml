@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pipelines-feedback
+description: Generic Kubernetes controller watching Jobs on your cluster and notifying external systems, mainly Github, Gitlab, but not only.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

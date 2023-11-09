@@ -1,0 +1,108 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ include "app.fullname" . }}
+    labels:
+        {{- include "app.labels" . | nindent 8 }}
+        {{- with .Values.controller.deployment.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+spec:
+  {{- if not .Values.controller.autoscaling.enabled }}
+    replicas: {{ .Values.controller.autoscaling.initialReplicaCount }}
+  {{- end }}
+    selector:
+        matchLabels:
+          {{- include "app.selectorLabels" . | nindent 10 }}
+    template:
+        metadata:
+          {{- with .Values.controller.deployment.annotations }}
+            annotations:
+              {{- toYaml . | nindent 16 }}
+          {{- end }}
+            labels:
+                {{- include "app.selectorLabels" . | nindent 16 }}
+                {{- if eq .Values.controller.deployment.image.tag "latest" | or (eq .Values.controller.deployment.image.tag "snapshot") }}
+                refreshImageTag: "{{- randAlphaNum 24 | nospace -}}"
+                {{- end }}
+                {{- with .Values.controller.deployment.labels }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+        spec:
+            terminationGracePeriodSeconds: {{ .Values.controller.deployment.terminationGracePeriodSeconds }}
+          {{- with .Values.controller.deployment.imagePullSecrets }}
+            imagePullSecrets:
+              {{- toYaml . | nindent 16 }}
+          {{- end }}
+            serviceAccountName: {{ include "app.controller.serviceAccountName" . }}
+
+            {{- with .Values.controller.deployment.podSecurityContext }}
+            securityContext:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            containers:
+                - name: {{ .Chart.Name }}
+                  securityContext:
+                    {{- toYaml .Values.controller.deployment.securityContext | nindent 20 }}
+                  image: "{{ .Values.controller.deployment.image.repository }}:{{ .Values.controller.deployment.image.tag | default .Chart.AppVersion }}"
+                  imagePullPolicy: {{ .Values.controller.deployment.image.pullPolicy }}
+
+                  args:
+                      - "--store={{ .Values.controller.adapters.store }}"
+                      - "--config-provider={{ .Values.controller.adapters.config }}"
+                      - "--feedback-receiver={{ .Values.controller.adapters.feedbackReceiver }}"
+                      - "--requeue-delay-after-error-count={{ .Values.controller.tweaks.requeueDelayAfterErrorCount }}"
+                      - "--requeue-delay-secs={{ .Values.controller.tweaks.requeueDelaySecs }}"
+                      - "--requeue-stop-after-error-count={{ .Values.controller.tweaks.requeueStopAfterErrorCount }}"
+
+                  {{- with .Values.controller.deployment.env }}
+                  env:
+                  {{- range $key, $value := . }}
+                      - name: {{ $key }}
+                        value: "{{ $value }}"
+                  {{- end }}
+                  {{- end }}
+
+                  envFrom:
+                      - secretRef:
+                            name: {{ .Values.controller.deployment.secrets.name }}
+                            optional: false
+
+                  ports:
+                      - name: http
+                        containerPort: 8080
+                        protocol: TCP
+
+                  {{- if .Values.controller.deployment.health.liveness.enabled }}
+                  livenessProbe:
+                      {{- with .Values.controller.deployment.health.liveness.attributes}}
+                      {{- toYaml . | nindent 22 }}
+                      {{- end}}
+                      httpGet:
+                          path: /healthz
+                          port: http
+                  {{- end }}
+                  {{- if .Values.controller.deployment.health.readiness.enabled }}
+                  readinessProbe:
+                      {{- with .Values.controller.deployment.health.readiness.attributes }}
+                      {{- toYaml . | nindent 22 }}
+                      {{- end }}
+                      httpGet:
+                          path: /readyz
+                          port: http
+                  {{- end }}
+                  resources:
+                    {{- toYaml .Values.controller.deployment.resources | nindent 20 }}
+          {{- with .Values.controller.deployment.nodeSelector }}
+            nodeSelector:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+          {{- with .Values.controller.deployment.affinity }}
+            affinity:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+          {{- with .Values.controller.deployment.tolerations }}
+            tolerations:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}

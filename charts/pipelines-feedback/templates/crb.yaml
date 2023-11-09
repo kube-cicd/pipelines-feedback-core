@@ -1,0 +1,14 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: {{ include "app.fullname" . }}
+    labels:
+      {{- include "app.labels" . | nindent 6 }}
+rules:
+    - apiGroups: [""]
+      resources: ["secret"]
+      verbs: ["list", "get"]
+      {{ if .Values.rbac.resourceNames }}
+      resourceNames: {{ toJson .Values.rbac.resourceNames }}
+      {{ end }}
