@@ -3,32 +3,9 @@ on: [push]
 
 jobs:
     build:
-        runs-on: ubuntu-22.04
-        steps:
-            - uses: actions/checkout@v3
-
-            - name: Set up Go
-              uses: actions/setup-go@v4
-              with:
-                  go-version: '1.20'
-
-            - name: Build
-              run: make build
-
-            - name: Test
-              run: make test
-
-            - name: Test report
-              if: always() && !contains(github.event.head_commit.message, '!test skip')
-              uses: phoenix-actions/test-reporting@v8
-              with:
-                  name: Tests
-                  path: "junit.xml"
-                  reporter: java-junit
-
-            - name: Build and push image
-              uses: redhat-actions/buildah-build@v2
-              with:
-                image: ghcr.io/kube-cicd/pipelines-feedback-batchv1
-                tags: v1 ${{ github.sha }}
-                containerfiles: ./Dockerfile
+        uses: kube-cicd/pipelines-feedback-core/.github/workflows/common.yaml@main
+        with:
+            containerImage: "quay.io/pipelines-feedback/batchv1"
+            containerRegistryHost: "quay.io"
+            containerRegistryUsername: "${{ secrets.QUAY_USERNAME }}"
+            containerRegistryPassword: "${{ secrets.QUAY_PASSWORD }}"

@@ -1,0 +1,70 @@
+name: Build & Test & Release
+on:
+    workflow_call:
+        inputs:
+            containerImage:
+                type: string
+                required: true
+            containerRegistryHost:
+                type: string
+                required: true
+                default: ghcr.io
+            containerRegistryUsername:
+                type: string
+                required: true
+            containerRegistryPassword:
+                type: string
+                required: true
+            goVersion:
+                type: string
+                default: "1.20"
+            osVersion:
+                type: string
+                default: "ubuntu-22.04"
+jobs:
+    build:
+        runs-on: ${{ inputs.osVersion }}
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Go
+              uses: actions/setup-go@v4
+              with:
+                  go-version: '${{ inputs.goVersion }}'
+
+            - name: Build
+              run: make build
+
+            - name: Test
+              run: make test
+
+            - name: Test report
+              if: always() && !contains(github.event.head_commit.message, '!test skip')
+              uses: phoenix-actions/test-reporting@v8
+              with:
+                  name: Tests
+                  path: "junit.xml"
+                  reporter: java-junit
+
+            - name: Login to container registry
+              uses: docker/login-action@v1
+              with:
+                  registry: ${{ inputs.containerRegistryHost }}
+                  username: ${{ inputs.containerRegistryUsername }}
+                  password: ${{ inputs.containerRegistryPassword }}
+
+            - name: Create container image tags
+              id: meta
+              uses: docker/metadata-action@v3
+              with:
+                  images: ${{ inputs.containerImage }}
+
+            - name: Build and release container image
+              uses: docker/build-push-action@v2
+              with:
+                  context: .
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
