@@ -25,3 +25,10 @@ jobs:
                   name: Tests
                   path: "junit.xml"
                   reporter: java-junit
+
+            - name: Build and push image
+              uses: redhat-actions/buildah-build@v2
+              with:
+                image: ghcr.io/kube-cicd/pipelines-feedback-batchv1
+                tags: v1 ${{ github.sha }}
+                containerfiles: ./Dockerfile

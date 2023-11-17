@@ -7,7 +7,7 @@ PATH = $(LOCALBIN):$(shell echo $$PATH)
 .PHONY: build
 build: fmt vet ## Build manager binary.
 	@mkdir -p $(LOCALBIN)
-	go build -o $(LOCALBIN)/batchv1-controller main.go
+	CGO_ENABLED=0 GOOS=linux go build -o $(LOCALBIN)/batchv1-controller main.go
 
 run:
 	./.build/batchv1-controller --debug
