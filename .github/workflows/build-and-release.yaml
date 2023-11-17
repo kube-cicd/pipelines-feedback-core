@@ -3,12 +3,10 @@ on: [push]
 
 jobs:
     build:
-        runs-on: ubuntu-22.04
-        steps:
-            - name: build
-              uses: kube-cicd/pipelines-feedback-core/.github/workflows/common.yaml@main
-              with:
-                  containerImage: "quay.io/pipelines-feedback/batchv1"
-                  containerRegistryHost: "quay.io"
-                  containerRegistryUsername: "${{ secrets.QUAY_USERNAME }}"
-                  containerRegistryPassword: "${{ secrets.QUAY_PASSWORD }}"
+        uses: kube-cicd/pipelines-feedback-core/.github/workflows/common.yaml@main
+        secrets:
+            containerRegistryUsername: "${{ secrets.QUAY_USERNAME }}"
+            containerRegistryPassword: "${{ secrets.QUAY_PASSWORD }}"
+        with:
+            containerImage: "quay.io/pipelines-feedback/batchv1"
+            containerRegistryHost: "quay.io"
