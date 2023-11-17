@@ -1,0 +1,28 @@
+name: Build & Test & Release
+on:
+    push:
+        tags:
+            - "*"
+
+jobs:
+    build:
+        uses: kube-cicd/pipelines-feedback-core/.github/workflows/app.common.yaml@main
+        secrets:
+            containerRegistryUsername: "${{ secrets.QUAY_USERNAME }}"
+            containerRegistryPassword: "${{ secrets.QUAY_PASSWORD }}"
+        with:
+            containerImage: "quay.io/pipelines-feedback/batchv1"
+            containerRegistryHost: "quay.io"
+
+    release-helm:
+        uses: kube-cicd/pipelines-feedback-core/.github/workflows/helm.common.yaml@main
+        needs: ["build"]
+        secrets:
+            registryUsername: "${{ secrets.QUAY_USERNAME }}"
+            registryPassword: "${{ secrets.QUAY_PASSWORD }}"
+        with:
+            chartRepoName: "pipelines-feedback"
+            chartName: "batchv1-chart"
+            chartPath: "charts/pipelines-feedback"
+            enableHelmDocs: false
+            registryHost: "quay.io"

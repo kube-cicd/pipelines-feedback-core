@@ -41,7 +41,7 @@ jobs:
               run: make test
 
             - name: Test report
-              if: always() && !contains(github.event.head_commit.message, '!test skip')
+              if: always() && !contains(github.event.head_commit.message, '!test skip') && github.event_name != 'pull_request'
               uses: phoenix-actions/test-reporting@v8
               with:
                   name: Tests

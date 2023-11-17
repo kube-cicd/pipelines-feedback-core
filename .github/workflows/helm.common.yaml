@@ -1,0 +1,171 @@
+name: Release Helm Chart
+on:
+    workflow_call:
+        secrets:
+            registryUsername:
+                required: true
+            registryPassword:
+                required: true
+        inputs:
+            osVariant:
+                type: string
+                default: "ubuntu-22.04"
+            helmVersion:
+                type: string
+                default: "v3.11.2"
+            helmDocsVersion:
+                type: string
+                default: "v1.11.0"
+            yqVersion:
+                type: string
+                default: "v4.32.2"
+
+            chartPath:
+                type: string
+                default: ""
+            chartRepoName:
+                description: "Repository name e.g. org-name/charts, fallbacks to '{org-name}/charts' when not specified"
+                type: string
+                default: ""
+            chartName:
+                type: string
+                default: ""
+            registryHost:
+                type: string
+                required: true
+                default: ghcr.io
+
+            enableHelmDocs:
+                description: "Enable helm-docs (https://github.com/norwoodj/helm-docs). Create README.md.gotmpl file to customize the template"
+                type: boolean
+                default: false
+
+jobs:
+    release-chart:
+        runs-on: ${{ inputs.osVariant }}
+        steps:
+            - name: Set up Helm
+              uses: azure/setup-helm@v3
+              with:
+                  version: "${{ inputs.helmVersion }}"
+
+            - name: Set up YQ
+              run: |
+                  curl -L -s https://github.com/mikefarah/yq/releases/download/${{ inputs.yqVersion }}/yq_linux_amd64 --output /usr/local/bin/yq
+
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Setup git
+              run: |
+                  git config --global user.email "example@example.org"
+                  git config --global user.name "Github Actions"
+
+            - name: Calculate facts
+              id: facts
+                # language=bash
+              run: |
+                  # ===================
+                  # Chart version
+                  # ===================
+                  ref="${{ github.ref_name }}"
+                  is_snapshot="false"
+                  if [[ "$(git log -n 1 --pretty=%d HEAD)" != *"tag:"* ]]; then
+                      ref="0.0.1-latest-${{ github.ref_name }}"
+                      is_snapshot="true"
+                  fi
+                  if [[ -f ${{ inputs.chartPath }}/bin/get-chart-version ]]; then
+                      chmod +x ${{ inputs.chartPath }}/bin/get-chart-version
+                      ref=$(${{ inputs.chartPath }}/bin/get-chart-version)
+                  fi
+                  echo "ref=${ref}" >> $GITHUB_OUTPUT
+                  
+                  # ===================
+                  # helm-docs
+                  # ===================
+                  if [[ -f "${{ inputs.chartPath }}/README.md.gotmpl" ]]; then
+                      echo "docs=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "docs=false" >> $GITHUB_OUTPUT 
+                  fi
+                  
+                  # ===================
+                  # Application version
+                  # ===================
+                  app_version="${ref}"
+                  if [[ -f ${{ inputs.chartPath }}/bin/get-app-version ]]; then
+                      echo " >> Reading version from ./bin/get-app-version"
+                      chmod +x ${{ inputs.chartPath }}/bin/get-app-version
+                      app_version=$(${{ inputs.chartPath }}/bin/get-app-version)
+                  fi
+                  if [[ "${is_snapshot}" == "true" ]]; then    # On snapshot we want to overwrite tags
+                      echo " >> We are on a branch, so the docker image tag will be the branch name as this is snapshot"
+                      app_version="${{ github.ref_name }}"
+                  fi
+                  echo "app_version=${app_version}" >> $GITHUB_OUTPUT
+                  
+                  # ====================================================================
+                  # Repo name - adds "dev" subdirectory if that's a snapshot
+                  # so the artifacthub.io will not show always snapshot as latest stable
+                  # ====================================================================
+                  repo_name="${{ inputs.chartRepoName }}"
+                  if [[ "${repo_name}" == "" ]]; then        # FALLBACK: when Workflow input was not specified, then use org-name/charts
+                      repo_name="${{ github.repository_owner }}/charts"
+                  fi
+                  if [[ "${is_snapshot}" == "true" ]]; then  # On snapshot we want to overwrite tags
+                      repo_name="${repo_name}/dev"
+                  fi
+                  echo "repo_name=${repo_name}" >> $GITHUB_OUTPUT
+                  
+                  # other
+                  echo "is_snapshot=${is_snapshot}" >> $GITHUB_OUTPUT
+
+            - name: Modify Chart.yaml
+                # language=bash
+              run: |
+                  set -x
+                  yq e -i ".appVersion= \"${{ steps.facts.outputs.app_version }}\"" ${{ inputs.chartPath }}/Chart.yaml
+                  yq e -i ".version= \"${{ steps.facts.outputs.ref }}\"" ${{ inputs.chartPath }}/Chart.yaml
+                  git add ${{ inputs.chartPath }}/Chart.yaml
+                  git commit -m "chore: Bump Chart.yaml" || true
+
+            - name: Modify values.yaml (not committed to GIT)
+                # language=bash
+              run: |
+                  set -x
+                  yq e -i ".release.ref= \"${{ github.ref_name }}\"" ${{ inputs.chartPath }}/values.yaml
+                  yq e -i ".release.isSnapshot= \"${{ steps.facts.outputs.is_snapshot }}\"" ${{ inputs.chartPath }}/values.yaml
+
+            - name: Generate README.md
+              if: ${{ (steps.facts.outputs.docs == 'true' || inputs.enableHelmDocs) && !startsWith(github.ref, 'refs/tags/v') }}
+                # language=bash
+              run: |
+                  cd ${{ inputs.chartPath }}
+                  docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:${{ inputs.helmDocsVersion }}
+                  git add README.md
+                  git commit -m "chore: Bump README.md by release pipeline (automatic)" || true
+
+            - name: Verify Helm syntax
+                # language=bash
+              run: "cd ${{ inputs.chartPath }} && helm template ./ --debug && helm lint ./"
+
+            - name: Publish changes to GIT
+                # language=bash
+              run: |
+                  # only on a branch
+                  if [[ "$(git rev-parse --abbrev-ref --symbolic-full-name HEAD)" != *"HEAD"* ]]; then
+                      git push
+                  fi
+
+            - name: Publish Helm Chart to the OCI registry
+              uses: appany/helm-oci-chart-releaser@v0.3.0
+              with:
+                  name: ${{ inputs.chartName || github.event.repository.name }}
+                  repository: ${{ steps.facts.outputs.repo_name }}
+                  tag: ${{ steps.facts.outputs.ref }}
+                  path: ${{ inputs.chartPath }}
+                  registry: ${{ inputs.registryHost }}
+                  registry_username: ${{ secrets.registryUsername }}
+                  registry_password: ${{ secrets.registryPassword }}
