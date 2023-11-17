@@ -144,20 +144,10 @@ jobs:
               run: |
                   cd ${{ inputs.chartPath }}
                   docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:${{ inputs.helmDocsVersion }}
-                  git add README.md
-                  git commit -m "chore: Bump README.md by release pipeline (automatic)" || true
 
             - name: Verify Helm syntax
                 # language=bash
               run: "cd ${{ inputs.chartPath }} && helm template ./ --debug && helm lint ./"
-
-            - name: Publish changes to GIT
-                # language=bash
-              run: |
-                  # only on a branch
-                  if [[ "$(git rev-parse --abbrev-ref --symbolic-full-name HEAD)" != *"HEAD"* ]]; then
-                      git push
-                  fi
 
             - name: Publish Helm Chart to the OCI registry
               uses: appany/helm-oci-chart-releaser@v0.3.0
