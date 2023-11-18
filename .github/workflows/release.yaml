@@ -26,3 +26,4 @@ jobs:
             chartPath: "charts/batchv1-chart"
             enableHelmDocs: false
             registryHost: "quay.io"
+
