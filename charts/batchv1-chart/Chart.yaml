@@ -1,5 +1,5 @@
 apiVersion: v2
-name: pipelines-feedback
+name: batchv1-chart
 description: Generic Kubernetes controller watching Jobs on your cluster and notifying external systems, mainly Github, Gitlab, but not only.
 type: application
 version: 0.1.0
