@@ -1,0 +1,5 @@
+controller:
+    deployment:
+        image:
+            repository: quay.io/pipelines-feedback/batchv1
+            pullPolicy: Always

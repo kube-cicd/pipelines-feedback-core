@@ -3,3 +3,4 @@
 /junit.xml
 /charts/batchv1-chart/*
 !/charts/batchv1-chart/Makefile
+!/charts/batchv1-chart/values.override.yaml

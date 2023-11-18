@@ -29,9 +29,9 @@ controller:
 
     deployment:
         image:
-            repository: ghcr.io/kube-cicd/pipelines-feedback-kindjob
-            tag: "latest"
-            pullPolicy: IfNotPresent
+            repository: "-empty-"
+            #tag: ""
+            pullPolicy: Always
         annotations: {}
         labels: {}
         terminationGracePeriodSeconds: 10
