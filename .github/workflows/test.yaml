@@ -7,7 +7,7 @@ on:
 
 jobs:
     build:
-        uses: kube-cicd/pipelines-feedback-core/.github/workflows/app.common.yaml@main
+        uses: kube-cicd/.github/.github/workflows/app.common.yaml@main
         secrets:
             containerRegistryUsername: "${{ secrets.QUAY_USERNAME }}"
             containerRegistryPassword: "${{ secrets.QUAY_PASSWORD }}"
@@ -16,7 +16,7 @@ jobs:
             containerRegistryHost: "quay.io"
 
     release-helm:
-        uses: kube-cicd/pipelines-feedback-core/.github/workflows/helm.common.yaml@main
+        uses: kube-cicd/.github/.github/workflows/helm.common.yaml@main
         needs: [ "build" ]
         secrets:
             registryUsername: "${{ secrets.QUAY_USERNAME }}"
