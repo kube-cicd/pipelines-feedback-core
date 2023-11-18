@@ -22,7 +22,7 @@ jobs:
             registryUsername: "${{ secrets.QUAY_USERNAME }}"
             registryPassword: "${{ secrets.QUAY_PASSWORD }}"
         with:
-            chartRepoName: "pipelines-feedback/batchv1-chart"
+            chartRepoName: "pipelines-feedback"
             chartName: "batchv1-chart"
             chartPath: "charts/batchv1-chart"
             enableHelmDocs: false
