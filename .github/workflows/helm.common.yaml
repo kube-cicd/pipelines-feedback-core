@@ -123,21 +123,15 @@ jobs:
                   # other
                   echo "is_snapshot=${is_snapshot}" >> $GITHUB_OUTPUT
 
-            - name: Modify Chart.yaml
-              # language=bash
-              run: |
-                  set -x
-                  yq e -i ".appVersion= \"${{ steps.facts.outputs.app_version }}\"" ${{ inputs.chartPath }}/Chart.yaml
-                  yq e -i ".version= \"${{ steps.facts.outputs.ref }}\"" ${{ inputs.chartPath }}/Chart.yaml
-                  git add ${{ inputs.chartPath }}/Chart.yaml
-                  git commit -m "chore: Bump Chart.yaml" || true
-
-            - name: Modify values.yaml (not committed to GIT)
+            - name: Modify values.yaml and Chart.yaml
               # language=bash
               run: |
                   set -x
                   yq e -i ".release.ref= \"${{ github.ref_name }}\"" ${{ inputs.chartPath }}/values.yaml
                   yq e -i ".release.isSnapshot= \"${{ steps.facts.outputs.is_snapshot }}\"" ${{ inputs.chartPath }}/values.yaml
+                  
+                  yq e -i ".appVersion= \"${{ steps.facts.outputs.app_version }}\"" ${{ inputs.chartPath }}/Chart.yaml
+                  yq e -i ".version= \"${{ steps.facts.outputs.ref }}\"" ${{ inputs.chartPath }}/Chart.yaml
 
             - name: Generate README.md
               if: ${{ (steps.facts.outputs.docs == 'true' || inputs.enableHelmDocs) && !startsWith(github.ref, 'refs/tags/v') }}
