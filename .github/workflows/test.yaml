@@ -24,6 +24,6 @@ jobs:
         with:
             chartRepoName: "pipelines-feedback"
             chartName: "batchv1-chart"
-            chartPath: "charts/pipelines-feedback"
+            chartPath: "charts/batchv1-chart"
             enableHelmDocs: false
             registryHost: "quay.io"
