@@ -114,9 +114,6 @@ jobs:
                   if [[ "${repo_name}" == "" ]]; then        # FALLBACK: when Workflow input was not specified, then use org-name/charts
                       repo_name="${{ github.repository_owner }}/charts"
                   fi
-                  if [[ "${is_snapshot}" == "true" ]]; then  # On snapshot we want to overwrite tags
-                      repo_name="${repo_name}/dev"
-                  fi
                   echo "repo_name=${repo_name}" >> $GITHUB_OUTPUT
                   
                   # other
