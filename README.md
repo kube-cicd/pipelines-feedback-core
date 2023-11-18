@@ -1,6 +1,9 @@
 Pipelines Feedback Core
 =======================
 
+![[image](https://quay.io/repository/pipelines-feedback/batchv1?tab=tags)](https://img.shields.io/badge/container-quay.io-green.svg)
+![[chart](https://quay.io/repository/pipelines-feedback/batchv1-chart?tab=tags)](https://img.shields.io/badge/chart-quay.io-green.svg)
+
 > NOTICE: THIS IS A WORK IN PROGRESS, currently more a PoC. I try to make it working, design it well, then stabilize and release.
 
 Generic Kubernetes controller watching Jobs on your cluster and notifying external systems, mainly Github, Gitlab, but not only.
@@ -12,6 +15,12 @@ There are **Feedback receivers**, **Feedback providers** and **Configuration pro
 **Bundled Configuration Providers:**
 - local (read configuration from local JSON file)
 - crd (read from Kubernetes CRD - `kind: PFConfig`)
+
+**Releases:**
+
+We do releases on Quay.io in order to be more compatible with RedHat stack and also to have cool download stats. Helm Charts are published as OCI images in a separate repository in the same organization.
+
+- [Check Quay.io releases page](https://quay.io/organization/pipelines-feedback)
 
 Roadmap
 -------

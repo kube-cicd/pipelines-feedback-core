@@ -1,3 +1,5 @@
 /.build/*
 /coverage.out
 /junit.xml
+/charts/batchv1-chart/*
+!/charts/batchv1-chart/Makefile

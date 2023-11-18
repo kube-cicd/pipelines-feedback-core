@@ -65,7 +65,7 @@ jobs:
 
             - name: Calculate facts
               id: facts
-                # language=bash
+              # language=bash
               run: |
                   # ===================
                   # Chart version
@@ -120,7 +120,7 @@ jobs:
                   echo "is_snapshot=${is_snapshot}" >> $GITHUB_OUTPUT
 
             - name: Modify Chart.yaml
-                # language=bash
+              # language=bash
               run: |
                   set -x
                   yq e -i ".appVersion= \"${{ steps.facts.outputs.app_version }}\"" ${{ inputs.chartPath }}/Chart.yaml
@@ -129,7 +129,7 @@ jobs:
                   git commit -m "chore: Bump Chart.yaml" || true
 
             - name: Modify values.yaml (not committed to GIT)
-                # language=bash
+              # language=bash
               run: |
                   set -x
                   yq e -i ".release.ref= \"${{ github.ref_name }}\"" ${{ inputs.chartPath }}/values.yaml
@@ -137,14 +137,18 @@ jobs:
 
             - name: Generate README.md
               if: ${{ (steps.facts.outputs.docs == 'true' || inputs.enableHelmDocs) && !startsWith(github.ref, 'refs/tags/v') }}
-                # language=bash
+              # language=bash
               run: |
                   cd ${{ inputs.chartPath }}
                   docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:${{ inputs.helmDocsVersion }}
 
             - name: Verify Helm syntax
-                # language=bash
+              # language=bash
               run: "cd ${{ inputs.chartPath }} && helm template ./ --debug && helm lint ./"
+
+            - name: Build
+              # language=bash
+              run: "cd ${{ inputs.chartPath }} && make"
 
             - name: Publish Helm Chart to the OCI registry
               uses: appany/helm-oci-chart-releaser@v0.3.0
