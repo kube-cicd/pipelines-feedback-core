@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.4.0
-	github.com/jenkins-x/go-scm v1.14.20
+	github.com/jenkins-x/go-scm v1.14.21
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/sirupsen/logrus v1.9.3
