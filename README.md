@@ -33,13 +33,15 @@ Roadmap
 - [x] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
 - [x] Add support for logs fetching
 - [x] Configuration schema support
+- [ ] Helm Chart
+- [ ] Getting started guide
 
 **First beta release - 0.2:**
-- [ ] Support for optional arguments in API for easier future interface extension (https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis)
 - [x] Support Redis as a cache store
 - [ ] Support for Matrix (Federated, Secure, Slack-like Messenger)
 
 **First stable release - 1.0:**
+- [ ] Support for optional arguments in API for easier future interface extension (https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis)
 - [ ] Freeze the API (in the code as well as in CRD)
 - [ ] Document the API
 
