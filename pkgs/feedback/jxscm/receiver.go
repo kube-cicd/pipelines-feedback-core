@@ -25,7 +25,7 @@ const defaultProgressComment = `
 | {{ $stage.Name }} |  {{ if $stage.Status.IsNotStarted }}Pending{{ else if $stage.Status.IsRunning }}:hourglass_flowing_sand:{{ else if $stage.Status.IsErroredOrFailed }}:x:{{ else if $stage.Status.IsSucceeded }}:white_check_mark:{{ end }}  |
 {{- end }}
 
-{{ if .pipeline.GetUrl }}- [Open in dashboard]({{ .pipeline.GetUrl }}){{ end }}
+{{ if .pipeline.GetDashboardUrl }}- [Open in dashboard]({{ .pipeline.GetDashboardUrl }}){{ end }}
 `
 
 const defaultFinishedComment = `
@@ -39,7 +39,7 @@ The Pipeline finished with status '{{ .pipeline.GetStatus }}' {{ if .pipeline.Ge
 ~~~
 {{ end }}
 
-{{ if .pipeline.GetUrl }}- [Open in dashboard]({{ .pipeline.GetUrl }}){{ end }}
+{{ if .pipeline.GetDashboardUrl }}- [Open in dashboard]({{ .pipeline.GetDashboardUrl }}){{ end }}
 `
 
 const markingBodyPart = `
@@ -250,7 +250,7 @@ func (jx *Receiver) updateCommitStatus(ctx context.Context, cfg config.Data, cli
 				State:  overallStatus,
 				Label:  "Pipeline - " + pipeline.GetFullName(),
 				Desc:   ourStatus.AsHumanReadableDescription(),
-				Target: pipeline.GetUrl(),
+				Target: pipeline.GetDashboardUrl(),
 			},
 		)
 

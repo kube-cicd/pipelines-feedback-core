@@ -25,7 +25,7 @@ type PipelineInfo struct {
 	dateStarted  time.Time
 	status       Status
 	stages       []PipelineStage
-	url          string
+	dashboardUrl string
 	retrievalNum int
 	labels       labels.Labels
 	annotations  labels.Labels
@@ -116,9 +116,9 @@ func (pi PipelineInfo) GetInstanceName() string {
 	return pi.instanceName
 }
 
-// GetUrl returns a URL to some dashboard, where the pipeline could be looked up
-func (pi PipelineInfo) GetUrl() string {
-	return pi.url
+// GetDashboardUrl returns a URL to some dashboard, where the pipeline could be looked up
+func (pi PipelineInfo) GetDashboardUrl() string {
+	return pi.dashboardUrl
 }
 
 // GetName returns a full object name, including namespace
@@ -167,7 +167,7 @@ func PipelineInfoWithLogsCollector(collector func() string) func(pipelineInfo *P
 // PipelineInfoWithUrl is setting optionally a URL pointing to a Pipeline visualization
 func PipelineInfoWithUrl(url string) func(pipelineInfo *PipelineInfo) {
 	return func(pipelineInfo *PipelineInfo) {
-		pipelineInfo.url = url
+		pipelineInfo.dashboardUrl = url
 	}
 }
 
@@ -182,7 +182,7 @@ func NewPipelineInfo(scm JobContext, namespace string, name string, instanceName
 		stages:       stages,
 		labels:       labels,
 		annotations:  annotations,
-		url:          "",
+		dashboardUrl: "",
 		globalCfg:    globalCfg,
 		logs: func() string {
 			return ""
