@@ -44,6 +44,10 @@ A JSON file should consist only a key-value dictionary.
 kubernetes (always turned on)
 -----------------------------
 
+`PFConfig` gives an incredible elasticity, `jobDiscovery` lets you define optionally settings per Pipeline or a group of Pipelines.
+
+Every `PFConfig` is merged with each other. The order is difficult to tell. Less important is the globally defined configuration by `local` adapter.
+
 ```yaml
 ---
 apiVersion: pipelinesfeedback.keskad.pl/v1alpha1
