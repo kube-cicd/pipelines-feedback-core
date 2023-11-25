@@ -92,6 +92,7 @@ func (bjp *BatchV1JobProvider) ReceivePipelineInfo(ctx context.Context, name str
 		},
 		labels.Set(job.Labels),
 		labels.Set(job.Annotations),
+		&globalCfg,
 		contract.PipelineInfoWithUrl(dashboardUrl),
 		contract.PipelineInfoWithLogsCollector(logs),
 	)

@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/fields"
@@ -20,6 +21,7 @@ func createBreadBookPipeline() *contract.PipelineInfo {
 		[]contract.PipelineStage{},
 		fields.Set{},
 		fields.Set{},
+		&config.Data{},
 		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
 		contract.PipelineInfoWithLogsCollector(func() string {
 			return "Baked!"
@@ -40,6 +42,7 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		[]contract.PipelineStage{},
 		fields.Set{},
 		fields.Set{},
+		&config.Data{},
 		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
 		contract.PipelineInfoWithLogsCollector(func() string {
 			return "Baked!"
@@ -61,6 +64,7 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		[]contract.PipelineStage{},
 		fields.Set{},
 		fields.Set{},
+		&config.Data{},
 		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
 		contract.PipelineInfoWithLogsCollector(func() string {
 			return "Created!"

@@ -40,6 +40,7 @@ func TestGenericController_ReconcileWithDelayedRetries(t *testing.T) {
 		},
 		labels.Set{},
 		labels.Set{},
+		&config.Data{},
 	)
 
 	receiver := &fake.Receiver{}

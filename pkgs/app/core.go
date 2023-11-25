@@ -113,8 +113,9 @@ func (app *PipelinesFeedbackApp) Run() error {
 		Name: "global",
 		AllowedFields: []string{
 			"dashboard-url",
+			"logs-enabled",
 			"logs-max-line-length",
-			"max-full-length-lines-count",
+			"logs-max-full-length-lines-count",
 			"logs-split-separator",
 		},
 	})

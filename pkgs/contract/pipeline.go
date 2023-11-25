@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+type ConfigurationData interface {
+	GetOrDefault(keyName string, defaultVal string) string
+}
+
 // PipelineInfo is a point-in-time Pipeline status including the SCM information
 type PipelineInfo struct {
 	ctx JobContext
@@ -25,6 +29,7 @@ type PipelineInfo struct {
 	retrievalNum int
 	labels       labels.Labels
 	annotations  labels.Labels
+	globalCfg    ConfigurationData
 	logs         func() string
 	_logs        string
 }
@@ -142,6 +147,10 @@ func (pi PipelineInfo) GetNamespace() string {
 
 // GetLogs is returning truncated logs. It is a lazy-loaded method, fetches logs on demand. After first fetch logs are kept in the memory
 func (pi PipelineInfo) GetLogs() string {
+	// logs can be disabled in settings
+	if strings.Trim(strings.ToLower(pi.globalCfg.GetOrDefault("logs-enabled", "true")), " ") == "false" {
+		return ""
+	}
 	if pi._logs == "" {
 		pi._logs = pi.logs()
 	}
@@ -163,7 +172,7 @@ func PipelineInfoWithUrl(url string) func(pipelineInfo *PipelineInfo) {
 }
 
 func NewPipelineInfo(scm JobContext, namespace string, name string, instanceName string, dateStarted time.Time,
-	stages []PipelineStage, labels labels.Labels, annotations labels.Labels, options ...func(info *PipelineInfo)) *PipelineInfo {
+	stages []PipelineStage, labels labels.Labels, annotations labels.Labels, globalCfg ConfigurationData, options ...func(info *PipelineInfo)) *PipelineInfo {
 	pi := PipelineInfo{
 		ctx:          scm,
 		name:         name,
@@ -174,6 +183,7 @@ func NewPipelineInfo(scm JobContext, namespace string, name string, instanceName
 		labels:       labels,
 		annotations:  annotations,
 		url:          "",
+		globalCfg:    globalCfg,
 		logs: func() string {
 			return ""
 		},

@@ -56,7 +56,7 @@ func ReadRequestStream(ctx context.Context, req *rest.Request) string {
 // TruncateLogs is truncating logs with a maximum lines number, maximum line length
 func TruncateLogs(logs string, data config.Data) string {
 	maxLineLength, _ := strconv.Atoi(data.GetOrDefault("logs-max-line-length", "64"))
-	maxFullLengthLines, _ := strconv.Atoi(data.GetOrDefault("max-full-length-lines-count", "10"))
+	maxFullLengthLines, _ := strconv.Atoi(data.GetOrDefault("logs-max-full-length-lines-count", "10"))
 	lineSplitSeparator := data.GetOrDefault("logs-split-separator", "(...)")
 	maxLogsLength := (maxFullLengthLines * maxLineLength) + (maxFullLengthLines * len(lineSplitSeparator))
 
