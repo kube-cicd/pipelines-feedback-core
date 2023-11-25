@@ -1,0 +1,9 @@
+{{ if .Values.redis.enabled }}
+---
+apiVersion: redis.redis.opstreelabs.in/v1beta2
+kind: Redis
+metadata:
+    name: redis
+spec:
+    {{ .Values.redis.spec | nindent 4 }}
+{{- end -}}

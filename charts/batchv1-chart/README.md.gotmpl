@@ -1,0 +1,13 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" .  }}{{ template "chart.typeBadge" .  }}{{ template "chart.appVersionBadge" .  }}
+
+`apiVersion: batch/v1`, `kind: Job` feedback. Reports Jobs progress to external systems like Gitlab or GitHub.
+Track progress of your Backup Jobs or Pipelines in realtime.
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

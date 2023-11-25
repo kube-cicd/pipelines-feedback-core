@@ -69,9 +69,56 @@ controller:
         env:
             REDIS_HOST: "redis:6379"
 
+# --------
+# Security
+# --------
 rbac:
     # optionally limit controller's permissions to be able to reach only secrets with specified name
     resourceNames: []
 
     # optionally limit RBAC to those namespaces
     bindToNamespaces: []
+
+# --------------------------------------------------------------------
+# Redis: Deploys a Redis from Redis Operator (requires Redis Operator)
+# --------------------------------------------------------------------
+redis:
+    enabled: false
+    spec:
+        kubernetesConfig:
+            image: quay.io/opstree/redis:v6.2.5
+            imagePullPolicy: IfNotPresent
+            resources:
+                limits:
+                    cpu: 1
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            updateStrategy: { }
+        livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+        readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+        redisExporter:
+            enabled: false
+            image: quay.io/opstree/redis-exporter:1.0
+        storage:
+            volumeClaimTemplate:
+                metadata: { }
+                spec:
+                    accessModes:
+                        - ReadWriteMany
+                    resources:
+                        requests:
+                            storage: 512Mi
+                status: { }
+            volumeMount: { }
