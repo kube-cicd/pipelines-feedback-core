@@ -4,6 +4,8 @@ apiVersion: redis.redis.opstreelabs.in/v1beta2
 kind: Redis
 metadata:
     name: redis
+    labels:
+        {{- include "app.labels" . | nindent 8 }}
 spec:
     {{ .Values.redis.spec | nindent 4 }}
 {{- end -}}
