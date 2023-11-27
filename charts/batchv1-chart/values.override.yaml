@@ -3,3 +3,10 @@ controller:
         image:
             repository: quay.io/pipelines-feedback/batchv1
             pullPolicy: Always
+            tag: main
+
+rbac:
+    jobRules:
+        - apiGroups: ["batch"]
+          resources: ["jobs"]
+          verbs: ["list", "get", "watch"]

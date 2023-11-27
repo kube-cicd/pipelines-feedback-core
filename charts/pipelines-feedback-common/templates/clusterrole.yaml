@@ -1,0 +1,19 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: {{ include "app.fullname" . }}-cr
+    annotations:
+        description: |
+            Allows to list PFConfig across the cluster.
+            Optionally allows to list all Jobs on the cluster when `.Values.rbac.bindToNamespaces` is not populated
+    labels:
+      {{- include "app.labels" . | nindent 6 }}
+rules:
+    - apiGroups: ["pipelinesfeedback.keskad.pl"]
+      resources: ["pfconfigs"]
+      verbs: ["list", "get", "watch"]
+
+    {{- if and (not .Values.rbac.bindToNamespaces) .Values.rbac.jobRules }}
+    {{ toYaml .Values.rbac.jobRules | nindent 4 }}
+    {{- end }}

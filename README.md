@@ -6,6 +6,8 @@ Pipelines Feedback Core
 
 > NOTICE: THIS IS A WORK IN PROGRESS, currently more a PoC. I try to make it working, design it well, then stabilize and release.
 
+![gitlab.png](docs/gitlab.png)
+
 Generic Kubernetes controller watching Jobs on your cluster and notifying external systems, mainly Github, Gitlab, but not only.
 There are **Feedback receivers**, **Feedback providers** and **Configuration providers**.
 
@@ -33,11 +35,11 @@ Roadmap
 - [x] Support for administrative jobs (jobs without SCM context e.g. backup jobs, identified by group-id)
 - [x] Add support for logs fetching
 - [x] Configuration schema support
+- [x] Support Redis as a cache store
 - [ ] Helm Chart
 - [ ] Getting started guide
 
 **First beta release - 0.2:**
-- [x] Support Redis as a cache store
 - [ ] Support for Matrix (Federated, Secure, Slack-like Messenger)
 
 **First stable release - 1.0:**

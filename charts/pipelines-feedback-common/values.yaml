@@ -74,10 +74,15 @@ controller:
 # --------
 rbac:
     # optionally limit controller's permissions to be able to reach only secrets with specified name
-    resourceNames: []
+    secretResourceNames: []
 
     # optionally limit RBAC to those namespaces
     bindToNamespaces: []
+
+    jobRules: []
+#        - apiGroups: ["batch"]
+#          resources: ["jobs"]
+#          verbs: ["list", "get", "watch"]
 
 # --------------------------------------------------------------------
 # Redis: Deploys a Redis from Redis Operator (requires Redis Operator)

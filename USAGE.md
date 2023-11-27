@@ -39,3 +39,10 @@ Pipelines Feedback Core has a core set of settings which are not associated with
 | logs-max-line-length             | 64            | How many characters a single log line could have                                                                                                                                                                                        |
 | logs-max-full-length-lines-count | 10            | How many log lines should be returned                                                                                                                                                                                                   |
 | logs-split-separator             | (...)         | A string that replaces ending in truncated logs                                                                                                                                                                                         | 
+
+[Helm Chart usage - installation](./HELM.md)
+----------------
+
+Controllers can use common Helm Chart maintained in this repository.
+
+- [See documentation](./HELM.md)
