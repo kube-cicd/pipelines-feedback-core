@@ -3,7 +3,6 @@ controller:
         image:
             repository: quay.io/pipelines-feedback/batchv1
             pullPolicy: Always
-            tag: main
 
 rbac:
     jobRules:
