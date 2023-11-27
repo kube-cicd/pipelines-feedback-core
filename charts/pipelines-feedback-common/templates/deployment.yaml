@@ -64,10 +64,12 @@ spec:
                   {{- end }}
                   {{- end }}
 
+                  {{- if .Values.controller.deployment.secrets.name }}
                   envFrom:
                       - secretRef:
                             name: {{ .Values.controller.deployment.secrets.name }}
                             optional: false
+                  {{- end }}
 
                   ports:
                       - name: http
