@@ -39,7 +39,6 @@ controller:
         podSecurityContext:
             capabilities:
                 drop: [ "ALL" ]
-                readOnlyRootFilesystem: true
                 runAsNonRoot: true
         securityContext:
             capabilities:
