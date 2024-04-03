@@ -37,13 +37,12 @@ controller:
         terminationGracePeriodSeconds: 10
         imagePullSecrets: {}
         podSecurityContext:
-            capabilities:
-                drop: [ "ALL" ]
-                readOnlyRootFilesystem: true
-                runAsNonRoot: true
+            runAsNonRoot: true
         securityContext:
             capabilities:
                 drop: [ "ALL" ]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
         resources:
             limits:
                 cpu: "1"
