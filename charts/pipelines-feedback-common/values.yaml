@@ -39,12 +39,11 @@ controller:
         podSecurityContext:
             capabilities:
                 drop: [ "ALL" ]
+                readOnlyRootFilesystem: true
                 runAsNonRoot: true
         securityContext:
             capabilities:
                 drop: [ "ALL" ]
-                readOnlyRootFilesystem: true
-                runAsNonRoot: true
         resources:
             limits:
                 cpu: "1"
