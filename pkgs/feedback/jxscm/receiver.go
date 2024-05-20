@@ -3,6 +3,9 @@ package jxscm
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/kube-cicd/pipelines-feedback-core/internal/feedback/jxscm"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
@@ -11,8 +14,6 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
-	"strconv"
-	"strings"
 )
 
 const defaultProgressComment = `
@@ -218,7 +219,7 @@ func (jx *Receiver) UpdateProgress(ctx context.Context, pipeline contract.Pipeli
 
 	scmCtx := pipeline.GetSCMContext()
 	ourStatus := pipeline.GetStatus()
-	overallStatus := jx.translateStatus(ourStatus, cfg)
+	overallStatus := jx.translateStatus(ourStatus)
 
 	// Update status in PR/MR comment
 	var prCommentStatusErr error = nil
@@ -280,7 +281,7 @@ func (jx *Receiver) updateCommitStatus(ctx context.Context, cfg config.Data, cli
 	return commitStatusErr
 }
 
-func (jx *Receiver) translateStatus(status contract.Status, cfg config.Data) scm.State {
+func (jx *Receiver) translateStatus(status contract.Status) scm.State {
 	switch status {
 	case contract.PipelineRunning:
 		return scm.StateRunning
@@ -290,6 +291,8 @@ func (jx *Receiver) translateStatus(status contract.Status, cfg config.Data) scm
 		return scm.StateSuccess
 	case contract.PipelineErrored:
 		return scm.StateError
+	case contract.PipelineSkipped:
+		return scm.StateCanceled
 	case contract.PipelineFailed:
 		return scm.StateFailure
 	default:

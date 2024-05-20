@@ -5,3 +5,5 @@
 !/charts/batchv1-chart/Makefile
 !/charts/batchv1-chart/values.override.yaml
 !/charts/batchv1-chart/README.md.gotmpl
+.idea
+

@@ -4,11 +4,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/labels"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type ConfigurationData interface {
@@ -23,7 +24,6 @@ type PipelineInfo struct {
 	instanceName string
 	namespace    string
 	dateStarted  time.Time
-	status       Status
 	stages       []PipelineStage
 	dashboardUrl string
 	retrievalNum int
@@ -204,6 +204,7 @@ const (
 	PipelineErrored   Status = "errored"
 	PipelineSucceeded Status = "succeeded"
 	PipelineCancelled Status = "cancelled"
+	PipelineSkipped   Status = "skipped"
 )
 
 func (s Status) IsFinished() bool {
@@ -212,6 +213,10 @@ func (s Status) IsFinished() bool {
 
 func (s Status) IsRunning() bool {
 	return s == PipelineRunning
+}
+
+func (s Status) IsSkipped() bool {
+	return s == PipelineSkipped
 }
 
 func (s Status) IsErroredOrFailed() bool {
@@ -233,8 +238,10 @@ func (s Status) IsNotStarted() bool {
 func (s Status) AsHumanReadableDescription() string {
 	if s == PipelineRunning || s == PipelinePending {
 		return "is " + string(s)
-	} else if s == PipelineFailed || s == PipelineErrored || s == PipelineSucceeded || s == PipelineCancelled {
+	} else if s == PipelineFailed || s == PipelineErrored || s == PipelineSucceeded {
 		return string(s)
+	} else if s == PipelineSkipped || s == PipelineCancelled {
+		return "was " + string(s)
 	}
 	return "is in unknown state"
 }
