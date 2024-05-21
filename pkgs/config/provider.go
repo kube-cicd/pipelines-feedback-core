@@ -3,6 +3,8 @@ package config
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/kube-cicd/pipelines-feedback-core/internal/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
@@ -10,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"strings"
 )
 
 type ConfigurationProviderInterface interface {

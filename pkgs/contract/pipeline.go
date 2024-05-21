@@ -59,6 +59,7 @@ func (pi PipelineInfo) GetStatus() Status {
 	succeeded := 0
 	running := 0
 	cancelled := 0
+	skipped := 0
 	allStages := len(pi.stages)
 
 	for _, stage := range pi.stages {
@@ -80,6 +81,9 @@ func (pi PipelineInfo) GetStatus() Status {
 		if stage.Status == PipelineCancelled {
 			cancelled += 1
 		}
+		if stage.Status == PipelineSkipped {
+			skipped += 1
+		}
 	}
 	if cancelled > 0 {
 		return PipelineCancelled
@@ -91,6 +95,9 @@ func (pi PipelineInfo) GetStatus() Status {
 		return PipelinePending
 	}
 	if allStages == succeeded {
+		return PipelineSucceeded
+	}
+	if skipped > 0 {
 		return PipelineSucceeded
 	}
 	return PipelineErrored

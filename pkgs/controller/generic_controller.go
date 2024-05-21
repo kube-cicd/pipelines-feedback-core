@@ -3,6 +3,9 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract/wiring"
@@ -18,8 +21,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"strings"
-	"time"
 )
 
 type GenericController struct {
@@ -204,7 +205,7 @@ func (gc *GenericController) InjectDependencies(recorder record.EventRecorder, k
 	gc.kubeConfig = kubeConfig
 	gc.logger = logger
 	sc := wiring.ServiceContext{
-		Recorder:     &recorder,
+		Recorder:     recorder,
 		KubeConfig:   kubeConfig,
 		Config:       configProvider,
 		Log:          logger.ForkWithFields(context.TODO(), map[string]interface{}{}),
