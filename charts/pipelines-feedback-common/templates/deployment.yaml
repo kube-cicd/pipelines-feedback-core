@@ -55,6 +55,7 @@ spec:
                       - "--requeue-delay-after-error-count={{ .Values.controller.tweaks.requeueDelayAfterErrorCount }}"
                       - "--requeue-delay-secs={{ .Values.controller.tweaks.requeueDelaySecs }}"
                       - "--requeue-stop-after-error-count={{ .Values.controller.tweaks.requeueStopAfterErrorCount }}"
+                      - "--controller-name={{ include "app.fullname" . }}"
 
                   {{- with .Values.controller.deployment.env }}
                   env:

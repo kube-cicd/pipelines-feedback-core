@@ -1,10 +1,13 @@
 package app
 
 import (
+	"os"
+
 	pipelinesfeedbackv1alpha1scheme "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/clientset/versioned/scheme"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/controller"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/feedback"
+	debugFeedback "github.com/kube-cicd/pipelines-feedback-core/pkgs/feedback/debug"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/feedback/jxscm"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
@@ -14,7 +17,6 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -34,6 +36,7 @@ type PipelinesFeedbackApp struct {
 	JobController          *controller.GenericController
 	ConfigController       *controller.ConfigurationController
 	Debug                  bool
+	ControllerName         string
 	MetricsBindAddress     string
 	HealthProbeBindAddress string
 	LeaderElect            bool
@@ -93,14 +96,14 @@ func (app *PipelinesFeedbackApp) Run() error {
 		},
 		HealthProbeBindAddress:        app.HealthProbeBindAddress,
 		LeaderElection:                app.LeaderElect,
-		LeaderElectionID:              app.LeaderElectId + ".keskad.pl",
+		LeaderElectionID:              app.LeaderElectId + app.ControllerName + ".keskad.pl",
 		LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
 		return err
 	}
 
-	recorder := mgr.GetEventRecorderFor("pipelines-feedback")
+	recorder := mgr.GetEventRecorderFor(app.ControllerName)
 	kubeconfig, err := createKubeConfiguration(os.Getenv("KUBECONFIG"))
 	if err != nil {
 		panic(err.Error())
@@ -172,6 +175,7 @@ func (app *PipelinesFeedbackApp) populateFeedbackReceiver() error {
 	if app.AvailableFeedbackReceivers == nil {
 		app.AvailableFeedbackReceivers = []feedback.Receiver{
 			&jxscm.Receiver{},
+			&debugFeedback.Receiver{},
 		}
 	}
 	for _, pluggable := range app.AvailableFeedbackReceivers {

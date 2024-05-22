@@ -35,7 +35,8 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	command.Flags().StringVarP(&app.MetricsBindAddress, "metrics-bind-address", "m", ":8080", "Metrics bind address")
 	command.Flags().StringVarP(&app.HealthProbeBindAddress, "health-probe-bind-address", "p", ":8081", "Health probe bind address")
 	command.Flags().BoolVarP(&app.LeaderElect, "leader-elect", "l", false, "Enable leader election")
-	command.Flags().StringVarP(&app.LeaderElectId, "instance-id", "", "aSaMKO0", "Leader election ID (if running multiple controller instances with different configuration)")
+	command.Flags().StringVarP(&app.ControllerName, "controller-name", "", "pipelines-feedback", "Controller name - useful when running multiple controllers on the same cluster")
+	command.Flags().StringVarP(&app.LeaderElectId, "instance-id", "", "aSaMKO0", "Leader election ID (should not be changed, unless you know what you are doing)")
 
 	// error handling
 	command.Flags().IntVarP(&app.DelayAfterErrorNum, "requeue-delay-after-error-count", "", 100, "Delay reconciliation of this resource, after it failed X times")
