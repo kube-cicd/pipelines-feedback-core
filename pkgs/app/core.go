@@ -36,6 +36,7 @@ type PipelinesFeedbackApp struct {
 	JobController          *controller.GenericController
 	ConfigController       *controller.ConfigurationController
 	Debug                  bool
+	DisableCRD             bool
 	ControllerName         string
 	MetricsBindAddress     string
 	HealthProbeBindAddress string
@@ -82,7 +83,9 @@ func (app *PipelinesFeedbackApp) Run() error {
 
 	// add a standard scheme and Pipelines Feedback Core CRDs
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(pipelinesfeedbackv1alpha1scheme.AddToScheme(scheme))
+	if !app.DisableCRD {
+		utilruntime.Must(pipelinesfeedbackv1alpha1scheme.AddToScheme(scheme))
+	}
 	// custom CRD schemes
 	for _, schemeSetter := range app.KubernetesSchemeSetters {
 		utilruntime.Must(schemeSetter(scheme))
@@ -143,9 +146,11 @@ func (app *PipelinesFeedbackApp) Run() error {
 		app.Logger.Error(err, "unable to setup job controller", "controller")
 		return err
 	}
-	if err = app.ConfigController.SetupWithManager(mgr); err != nil {
-		app.Logger.Error(err, "unable to setup configuration controller", "config")
-		return err
+	if !app.DisableCRD {
+		if err = app.ConfigController.SetupWithManager(mgr); err != nil {
+			app.Logger.Error(err, "unable to setup configuration controller", "config")
+			return err
+		}
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

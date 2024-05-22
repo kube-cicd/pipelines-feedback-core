@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
@@ -174,11 +173,7 @@ func (gc *GenericController) updateProgress(ctx context.Context, retrieved contr
 
 func (gc *GenericController) SetupWithManager(mgr ctrl.Manager) error {
 	hasLabel := func(obj v1.Object) bool {
-		labels := obj.GetLabels()
-		if val, ok := labels[contract.LabelFeedbackEnabled]; ok {
-			return strings.Trim(strings.ToLower(val), " ") != "false"
-		}
-		return false
+		return contract.IsJobHavingRequiredLabel(obj.GetLabels())
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
