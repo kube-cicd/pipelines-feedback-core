@@ -65,6 +65,16 @@ controller:
             name: ""
         env:
             REDIS_HOST: "redis:6379"
+            CONFIG_PATH: "/etc/pipelines-feedback/pipelines-feedback.json"
+
+    # -- Default config lets you append globally same configuration you have in PFConfigs. PFConfigs takes precedence. In order to change default config controller needs to be restarted
+    defaultConfig:
+        logs-enabled: "true"
+        # jxscm.git-kind: "gitlab"
+        # jxscm.git-server: "http://some-git-host"
+        # jxscm.token: "glpat-xxx"
+        # jxscm.git-user: "__token__"
+        # dashboard-url: "https://console-openshift-console.apps.my-host.org/k8s/ns/{{ .namespace }}/tekton.dev~v1beta1~PipelineRun/{{ .name }}"
 
 # --------
 # Security

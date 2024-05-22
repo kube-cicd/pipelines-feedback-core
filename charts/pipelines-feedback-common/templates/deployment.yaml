@@ -96,6 +96,11 @@ spec:
                   {{- end }}
                   resources:
                     {{- toYaml .Values.controller.deployment.resources | nindent 20 }}
+
+                  volumeMounts:
+                      - name: config
+                        mountPath: /etc/pipelines-feedback/pipelines-feedback.json
+                        subPath: pipelines-feedback.json
           {{- with .Values.controller.deployment.nodeSelector }}
             nodeSelector:
               {{- toYaml . | nindent 14 }}
@@ -108,3 +113,8 @@ spec:
             tolerations:
               {{- toYaml . | nindent 14 }}
           {{- end }}
+            volumes:
+                - name: config
+                  configMap:
+                    name: {{ include "app.fullname" . }}-default-config
+
