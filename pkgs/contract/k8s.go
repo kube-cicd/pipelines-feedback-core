@@ -5,17 +5,40 @@ import (
 	"strings"
 )
 
-const (
-	LabelFeedbackEnabled   = "pipelinesfeedback.keskad.pl/enabled"
-	AnnotationPrId         = "pipelinesfeedback.keskad.pl/pr-id"
-	AnnotationCommitHash   = "pipelinesfeedback.keskad.pl/commit"
-	AnnotationHttpsRepo    = "pipelinesfeedback.keskad.pl/https-repo-url"
-	AnnotationReference    = "pipelinesfeedback.keskad.pl/ref"
-	AnnotationTechnicalJob = "pipelinesfeedback.keskad.pl/technical-job"
-)
+// GetPrIdAnnotation returns by default "pipelinesfeedback.keskad.pl/pr-id". Parametrized with 'ANNOTATION_FEEDBACK_BASE' env variable
+func GetPrIdAnnotation() string {
+	return getAnnotationBase() + "/pr-id"
+}
 
-func GetFeedbackLabel() (string, string) {
-	labelName := LabelFeedbackEnabled
+// GetCommmitAnnotation returns by default "pipelinesfeedback.keskad.pl/commit". Parametrized with 'ANNOTATION_FEEDBACK_BASE' env variable
+func GetCommmitAnnotation() string {
+	return getAnnotationBase() + "/commit"
+}
+
+// GetHttpsRepoUrlAnnotation returns by default "pipelinesfeedback.keskad.pl/https-repo-url". Parametrized with 'ANNOTATION_FEEDBACK_BASE' env variable
+func GetHttpsRepoUrlAnnotation() string {
+	return getAnnotationBase() + "/https-repo-url"
+}
+
+// GetRefAnnotation returns by default "pipelinesfeedback.keskad.pl/ref". Parametrized with 'ANNOTATION_FEEDBACK_BASE' env variable
+func GetRefAnnotation() string {
+	return getAnnotationBase() + "/ref"
+}
+
+// GetTechnicalJobAnnotation returns by default "pipelinesfeedback.keskad.pl/technical-job". Parametrized with 'ANNOTATION_FEEDBACK_BASE' env variable
+func GetTechnicalJobAnnotation() string {
+	return getAnnotationBase() + "/technical-job"
+}
+
+func getAnnotationBase() string {
+	if val := os.Getenv("ANNOTATION_FEEDBACK_BASE"); val != "" {
+		return os.Getenv("ANNOTATION_FEEDBACK_BASE")
+	}
+	return "pipelinesfeedback.keskad.pl"
+}
+
+func getFeedbackLabel() (string, string) {
+	labelName := "pipelinesfeedback.keskad.pl/enabled"
 	labelValue := "true"
 
 	if val := os.Getenv("LABEL_FEEDBACK_ENABLED_NAME"); val != "" {
@@ -29,7 +52,7 @@ func GetFeedbackLabel() (string, string) {
 
 // IsJobHavingRequiredLabel decides if a controller should take the resource
 func IsJobHavingRequiredLabel(labels map[string]string) bool {
-	requiredLabelName, requiredLabelValue := GetFeedbackLabel()
+	requiredLabelName, requiredLabelValue := getFeedbackLabel()
 	// there is a label present
 	if val, ok := labels[requiredLabelName]; ok {
 		// label has required value set
