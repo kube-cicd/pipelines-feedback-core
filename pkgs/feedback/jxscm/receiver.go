@@ -23,7 +23,7 @@ const defaultProgressComment = `
 | Stage | Status |
 |-------|--------|
 {{- range $stage := .pipeline.GetStages }}
-| {{ $stage.Name }} |  {{ if $stage.Status.IsNotStarted }}Pending{{ else if $stage.Status.IsRunning }}:hourglass_flowing_sand:{{ else if $stage.Status.IsErroredOrFailed }}:x:{{ else if $stage.Status.IsSucceeded }}:white_check_mark:{{ else if $stage.Status.IsSkipped }}:arrow_lower_left: Skipped{{ else }}{{ $stage.Status.AsHumanReadableDescription }}{{ end }}  |
+| {{ $stage.Name }} |  {{ if $stage.Status.IsSkipped }}:arrow_lower_left: Skipped{{ else if $stage.Status.IsNotStarted }}Pending{{ else if $stage.Status.IsRunning }}:hourglass_flowing_sand:{{ else if $stage.Status.IsErroredOrFailed }}:x:{{ else if $stage.Status.IsSucceeded }}:white_check_mark:{{ else }}{{ $stage.Status.AsHumanReadableDescription }}{{ end }}  |
 {{- end }}
 
 {{ if .pipeline.GetDashboardUrl }}- [Open in dashboard]({{ .pipeline.GetDashboardUrl }}){{ end }}
