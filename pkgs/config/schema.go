@@ -8,6 +8,7 @@ import (
 )
 
 type SchemaValidator struct {
+	Debug  bool
 	schema map[string]Schema
 }
 
@@ -20,6 +21,9 @@ func (sm *SchemaValidator) Add(schema Schema) {
 
 func (sm *SchemaValidator) ValidateRequestedEntry(group string, key string) error {
 	if _, exists := sm.schema[group]; !exists {
+		if sm.Debug {
+			return nil
+		}
 		return errors.New(fmt.Sprintf("component '%s' has no registered its schema", group))
 	}
 	grp := sm.schema[group]
