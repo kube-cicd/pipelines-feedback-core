@@ -69,6 +69,7 @@ func (cp *ConfigurationProvider) FetchGlobal(component string) Data {
 			continue
 		}
 		endMap = mergeMaps(endMap, doc.Data)
+
 	}
 	return NewData(component, transformMapByComponent(endMap, component), cp.cfgSchema, cp.logger)
 }
@@ -77,6 +78,12 @@ func (cp *ConfigurationProvider) FetchGlobal(component string) Data {
 func transformMapByComponent(input map[string]string, component string) map[string]string {
 	output := make(map[string]string)
 	for key, val := range input {
+		// global components (without "xyz." prefix)
+		if (component == "" || component == "global") && !strings.Contains(key, ".") {
+			output[key] = val
+			continue
+		}
+		// per component e.g. "jxscm"
 		if strings.HasPrefix(key, component+".") {
 			newKey := key[len(component+"."):]
 			output[newKey] = val
