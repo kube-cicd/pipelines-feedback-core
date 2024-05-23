@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"strings"
 
 	pipelinesfeedbackv1alpha1scheme "github.com/kube-cicd/pipelines-feedback-core/pkgs/client/clientset/versioned/scheme"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
@@ -18,6 +19,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
@@ -42,6 +44,7 @@ type PipelinesFeedbackApp struct {
 	HealthProbeBindAddress string
 	LeaderElect            bool
 	LeaderElectId          string
+	RestrictNamespaces     string
 
 	CustomFeedbackReceiver string
 	CustomStore            string
@@ -92,7 +95,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	managerOpts := ctrl.Options{
 		Scheme: scheme,
 		Metrics: server.Options{
 			BindAddress: app.MetricsBindAddress,
@@ -101,7 +104,26 @@ func (app *PipelinesFeedbackApp) Run() error {
 		LeaderElection:                app.LeaderElect,
 		LeaderElectionID:              app.LeaderElectId + app.ControllerName + ".keskad.pl",
 		LeaderElectionReleaseOnCancel: true,
-	})
+	}
+
+	// restrict controller to specific namespaces only
+	if app.RestrictNamespaces != "" {
+		nsList := strings.Split(app.RestrictNamespaces, ",")
+		nsMap := make(map[string]cache.Config, len(nsList))
+		leaderElectionNamespace := ""
+		for i, ns := range nsList {
+			ns = strings.TrimSpace(ns)
+			if i == 0 {
+				leaderElectionNamespace = ns
+			}
+			// nil will have the namespace use the default settings
+			nsMap[ns] = cache.Config{}
+		}
+		managerOpts.Cache.DefaultNamespaces = nsMap
+		managerOpts.LeaderElectionNamespace = leaderElectionNamespace
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), managerOpts)
 	if err != nil {
 		return err
 	}
@@ -114,7 +136,7 @@ func (app *PipelinesFeedbackApp) Run() error {
 
 	// PFConfig schema registration: There all dynamically loaded components are able to register their schema
 	// for configuration keys validation
-	app.schema = &config.SchemaValidator{}
+	app.schema = &config.SchemaValidator{Debug: app.Debug}
 	app.schema.Add(config.Schema{
 		Name: "global",
 		AllowedFields: []string{

@@ -32,6 +32,7 @@ func NewRootCommand(app *app.PipelinesFeedbackApp) *cobra.Command {
 	}
 
 	command.Flags().BoolVarP(&app.Debug, "debug", "v", false, "Increase verbosity to the debug level")
+	command.Flags().StringVarP(&app.RestrictNamespaces, "namespace", "n", "", "Optionally restricts controller scope to listed namespaces (comma separated)")
 	command.Flags().BoolVarP(&app.DisableCRD, "disable-crd", "", false, "Disables internal CRD handling like PFConfigs")
 	command.Flags().StringVarP(&app.MetricsBindAddress, "metrics-bind-address", "m", ":8080", "Metrics bind address")
 	command.Flags().StringVarP(&app.HealthProbeBindAddress, "health-probe-bind-address", "p", ":8081", "Health probe bind address")
