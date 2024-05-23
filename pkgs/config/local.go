@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
@@ -8,7 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	"os"
 )
 
 type LocalFileConfigurationCollector struct {
@@ -76,6 +77,8 @@ func (lf *LocalFileConfigurationCollector) CollectInitially() ([]*v1alpha1.PFCon
 		return empty, errors.Wrap(unmarshalErr, "cannot unmarshal file from JSON into struct")
 	}
 	lf.logger.Infof("Loaded config from '%s'", lf.configPath)
+	lf.logger.Debug(pfc.Data)
+
 	return []*v1alpha1.PFConfig{&pfc}, nil
 }
 
