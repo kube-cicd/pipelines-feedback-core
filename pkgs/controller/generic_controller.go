@@ -74,28 +74,28 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//
 	// Fetch the object from PipelineInfoProvider
 	//
-	retrieved, retrieveErr := gc.PipelineInfoProvider.ReceivePipelineInfo(ctx, req.Name, req.Namespace, logger)
-	if retrieveErr != nil {
+	received, receiveErr := gc.PipelineInfoProvider.ReceivePipelineInfo(ctx, req.Name, req.Namespace, logger)
+	if receiveErr != nil {
 		// log: not matched
-		if retrieveErr.Error() == provider.ErrNotMatched {
+		if receiveErr.Error() == provider.ErrNotMatched {
 			logger.Debugf("resource not matched. The provider declined to retrieve it")
 			return ctrl.Result{}, nil
 		}
 
-		logger.Errorf("cannot retrieve resource: %v", retrieveErr.Error())
-		return ctrl.Result{Requeue: true}, errors.Wrap(retrieveErr, "cannot receive Pipeline status")
+		logger.Errorf("cannot retrieve resource: %v", receiveErr.Error())
+		return ctrl.Result{Requeue: true}, nil
 	}
 
 	// record how many times an object was reconciled
 	// this info is later used to send update or not
-	eventNum := gc.Store.CountHowManyTimesKubernetesResourceReceived(&retrieved)
+	eventNum := gc.Store.CountHowManyTimesKubernetesResourceReceived(&received)
 	logger.Debugf("count(%s) = %v", req.Name, eventNum)
-	retrieved.SetRetrievalCount(eventNum)
+	received.SetRetrievalCount(eventNum)
 
 	//
 	// Errors: Make errors not processed infinitely
 	//
-	errorCount := gc.Store.HowManyTimesErrored(retrieved)
+	errorCount := gc.Store.HowManyTimesErrored(received)
 	if errorCount >= gc.getDelayAfterErrorNum() && errorCount < gc.getStopProcessingAfterErrorNum() {
 		logger.Warningf("Setting requeue time to %ds", gc.getRequeueDelaySecs())
 		requeueTime = time.Second * time.Duration(gc.getRequeueDelaySecs())
@@ -108,7 +108,7 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//
 	// Cache: Do not trigger any updates if the Pipeline in current state was already processed
 	//
-	if gc.Store.WasPipelineProcessedAtThisState(retrieved) {
+	if gc.Store.WasPipelineProcessedAtThisState(received) {
 		logger.Debug("(Cached) Pipeline was already processed at exactly this state, skipping")
 		return ctrl.Result{}, nil
 	}
@@ -116,14 +116,14 @@ func (gc *GenericController) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//
 	// Notify the Feedback Receiver
 	//
-	if err := gc.updateProgress(ctx, retrieved, logger); err != nil {
-		logger.Errorf("cannot update feedback retriever: %s", err.Error())
-		gc.Store.CountHowManyTimesUpdateFailed(retrieved)
+	if err := gc.updateProgress(ctx, received, logger); err != nil {
+		logger.Errorf("cannot update feedback receiver: %s", err.Error())
+		gc.Store.CountHowManyTimesUpdateFailed(received)
 
 		return ctrl.Result{RequeueAfter: requeueTime}, nil
 	}
 
-	gc.Store.RecordPipelineStateProcessed(retrieved)
+	gc.Store.RecordPipelineStateProcessed(received)
 	return ctrl.Result{}, nil
 }
 
