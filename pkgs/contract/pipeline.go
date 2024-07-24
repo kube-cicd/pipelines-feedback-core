@@ -296,13 +296,14 @@ func NewSCMContext(repoHttpsUrl string) (JobContext, error) {
 	}
 
 	nameSplit := strings.Split(u.Path, "/")
+	repositoryName := nameSplit[len(nameSplit)-1]
 
 	if len(nameSplit) < 3 {
 		return scm, errors.New("repository url does not contain valid organization and repository names")
 	}
 
-	scm.OrganizationName = nameSplit[1]
-	scm.RepositoryName = strings.TrimSuffix(nameSplit[2], ".git")
+	scm.OrganizationName = strings.Trim(strings.Join(nameSplit[:len(nameSplit)-1], "/"), "/ ")
+	scm.RepositoryName = strings.Trim(strings.TrimSuffix(repositoryName, ".git"), "/ ")
 
 	return scm, nil
 }

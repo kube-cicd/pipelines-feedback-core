@@ -1,14 +1,15 @@
 package contract_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/fake"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/labels"
-	"testing"
-	"time"
 )
 
 func TestPipelineInfo_GetLogs(t *testing.T) {
@@ -49,4 +50,20 @@ func TestPipelineInfo_GetLogs(t *testing.T) {
 	}, &fake.NullValidator{}, logging.NewInternalLogger())
 
 	assert.Equal(t, "", pi.GetLogs(), "Expecting empty logs - when 'global.logs-enable == false'")
+}
+
+func TestNewSCMContext_SupportsNestedDirectoriesStructureInGITUrl(t *testing.T) {
+	ctx, err := contract.NewSCMContext("https://git.example.org/books/anarchism/bakunin.git")
+
+	assert.Equal(t, "books/anarchism", ctx.OrganizationName)
+	assert.Equal(t, "bakunin", ctx.RepositoryName)
+	assert.Nil(t, err)
+}
+
+func TestNewSCMContext_WithSimpleGITUrl(t *testing.T) {
+	ctx, err := contract.NewSCMContext("https://git.example.org/books/bakunin.git")
+
+	assert.Equal(t, "books", ctx.OrganizationName)
+	assert.Equal(t, "bakunin", ctx.RepositoryName)
+	assert.Nil(t, err)
 }
