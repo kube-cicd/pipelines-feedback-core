@@ -4,7 +4,7 @@ Pipelines Feedback Core
 ![[image](https://quay.io/repository/pipelines-feedback/batchv1?tab=tags)](https://img.shields.io/badge/container-quay.io-green.svg)
 ![[chart](https://quay.io/repository/pipelines-feedback/batchv1-chart?tab=tags)](https://img.shields.io/badge/chart-quay.io-green.svg)
 
-> NOTICE: THIS IS A WORK IN PROGRESS, currently more a PoC. I try to make it working, design it well, then stabilize and release.
+> NOTICE: This project awaits a release and is looking for an active co-maintainers. Its been working for about 2 years on a big company-wide scale making the project ready to be released soon.
 
 ![gitlab.png](docs/gitlab.png)
 
