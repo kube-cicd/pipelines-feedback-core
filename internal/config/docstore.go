@@ -1,6 +1,8 @@
 package config
 
 import (
+	"sort"
+
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/pkg/errors"
 )
@@ -38,6 +40,10 @@ func (ds *IndexedDocumentStore) GetForNamespace(namespace string) []*v1alpha1.PF
 			docsForNs = append(docsForNs, doc)
 		}
 	}
+	// sort by PriorityWeight ascending
+	sort.SliceStable(docsForNs, func(i, j int) bool {
+		return docsForNs[i].Spec.PriorityWeight < docsForNs[j].Spec.PriorityWeight
+	})
 	return docsForNs
 }
 

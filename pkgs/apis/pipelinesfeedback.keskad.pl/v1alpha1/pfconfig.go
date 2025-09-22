@@ -49,6 +49,7 @@ func NewPFConfig() PFConfig {
 			JobDiscovery: JobDiscovery{
 				LabelSelector: []metav1.LabelSelector{},
 			},
+			PriorityWeight: 0,
 		},
 		Data:   Data{},
 		Status: PFCStatus{},
@@ -57,7 +58,8 @@ func NewPFConfig() PFConfig {
 
 // Spec represents .spec
 type Spec struct {
-	JobDiscovery JobDiscovery `json:"jobDiscovery"`
+	JobDiscovery   JobDiscovery `json:"jobDiscovery"`
+	PriorityWeight int          `json:"priorityWeight,omitempty"`
 }
 
 // JobDiscovery represents .spec.jobDiscovery
