@@ -2,11 +2,12 @@ package store
 
 import (
 	"context"
+	"os"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"os"
-	"testing"
 )
 
 func TestRedis_Flow(t *testing.T) {
@@ -16,7 +17,7 @@ func TestRedis_Flow(t *testing.T) {
 	// 0. Setup Redis container
 	//
 	req := testcontainers.ContainerRequest{
-		Image:        "ghcr.io/mirrorshub/docker/redis:7.0.7-alpine",
+		Image:        "quay.io/opstree/redis:v7.4.4",
 		ExposedPorts: []string{"6379/tcp"},
 		WaitingFor:   wait.ForExposedPort(),
 	}
