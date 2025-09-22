@@ -62,6 +62,10 @@ spec:
                       x-kubernetes-map-type: atomic
                     type: array
                 type: object
+              priorityWeight:
+                type: integer
+                description: Optional priority for this configuration. When multiple PFConfigs match, the one with the highest priorityWeight takes precedence. Configurations with a higher value override those with a lower value.
+                default: 0
             required:
             - jobDiscovery
             type: object

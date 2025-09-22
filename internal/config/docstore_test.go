@@ -1,11 +1,12 @@
 package config_test
 
 import (
+	"testing"
+
 	"github.com/kube-cicd/pipelines-feedback-core/internal/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/apis/pipelinesfeedback.keskad.pl/v1alpha1"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/fake"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestIndexedDocumentStoreFlow_Namespaced(t *testing.T) {
@@ -69,4 +70,55 @@ func TestIndexedDocumentStoreFlow_ClusterScope(t *testing.T) {
 
 	assert.Equal(t, 2, len(store.GetForNamespace("social")))  // there we have 1 namespaced + 1 global
 	assert.Equal(t, 1, len(store.GetForNamespace("default"))) // there we didn't push any PFConfig
+}
+
+func TestGetForNamespace_SortsByPriorityWeightAscending(t *testing.T) {
+	store := config.CreateIndexedDocumentStore(&fake.NullValidator{})
+
+	cfgLow := v1alpha1.NewPFConfig()
+	cfgLow.Name = "low"
+	cfgLow.Namespace = "test"
+	cfgLow.Spec.PriorityWeight = 10
+
+	cfgHigh := v1alpha1.NewPFConfig()
+	cfgHigh.Name = "high"
+	cfgHigh.Namespace = "test"
+	cfgHigh.Spec.PriorityWeight = 100
+
+	cfgMid := v1alpha1.NewPFConfig()
+	cfgMid.Name = "mid"
+	cfgMid.Namespace = "test"
+	cfgMid.Spec.PriorityWeight = 50
+
+	store.Push(&cfgHigh)
+	store.Push(&cfgLow)
+	store.Push(&cfgMid)
+
+	result := store.GetForNamespace("test")
+	assert.Equal(t, 3, len(result))
+	assert.Equal(t, "low", result[0].Name)
+	assert.Equal(t, "mid", result[1].Name)
+	assert.Equal(t, "high", result[2].Name)
+}
+
+func TestGetForNamespace_DefaultPriorityWeightIsZero(t *testing.T) {
+	store := config.CreateIndexedDocumentStore(&fake.NullValidator{})
+
+	cfgZero := v1alpha1.NewPFConfig()
+	cfgZero.Name = "zero"
+	cfgZero.Namespace = "test"
+	// PriorityWeight is not specified, should default to 0
+
+	cfgTen := v1alpha1.NewPFConfig()
+	cfgTen.Name = "ten"
+	cfgTen.Namespace = "test"
+	cfgTen.Spec.PriorityWeight = 10
+
+	store.Push(&cfgTen)
+	store.Push(&cfgZero)
+
+	result := store.GetForNamespace("test")
+	assert.Equal(t, 2, len(result))
+	assert.Equal(t, "zero", result[0].Name)
+	assert.Equal(t, "ten", result[1].Name)
 }
