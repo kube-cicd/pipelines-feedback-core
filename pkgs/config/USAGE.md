@@ -46,7 +46,12 @@ kubernetes (always turned on)
 
 `PFConfig` gives an incredible elasticity, `jobDiscovery` lets you define optionally settings per Pipeline or a group of Pipelines.
 
-Every `PFConfig` is merged with each other. The order is difficult to tell. Less important is the globally defined configuration by `local` adapter.
+Every `PFConfig` is merged with each other. The order is difficult to tell, when the prority is not defined explicitly.
+
+Ordering rules:
+- PFConfig with a higher `priorityWeight` will cover values of other `PFConfig` entities with lower `priorityWeight`
+- Global configuration (refered as `local`) has always lower priority than `PFConfig`
+
 
 ```yaml
 ---
@@ -56,6 +61,7 @@ metadata:
     name: keskad-sample-1
     namespace: team-1
 spec:
+    priorityWeight: 105  # the higher priority has the PFConfig the more important its values are
     #jobDiscovery: {}  # catch all jobs
     
     # filter jobs by label selector
