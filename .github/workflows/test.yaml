@@ -17,6 +17,7 @@ jobs:
             goVersion: "1.25"
 
     release-helm:
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: kube-cicd/.github/.github/workflows/helm.common.yaml@main
         needs: [ "build" ]
         secrets:
