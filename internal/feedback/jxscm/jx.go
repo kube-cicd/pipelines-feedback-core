@@ -77,7 +77,8 @@ func NewClientFromConfig(data config.Data, gitToken string) (*scm.Client, error)
 
 	// make sure the URL is valid / issue #45
 	if serverURL != "" {
-		// fallback to https:// in case, when URL is defined, but does not contain the scheme
+		// Default to https for scheme-less URLs. This is a sensible default but might not work for internal, http-only git servers.
+		// A more robust solution could introduce a separate configuration option for the scheme.
 		if !strings.Contains(serverURL, "://") {
 			serverURL = "https://" + serverURL
 		}
