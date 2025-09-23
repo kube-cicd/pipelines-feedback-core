@@ -1,14 +1,15 @@
 package store_test
 
 import (
-	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
-	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
-	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/fields"
 	"testing"
 	"time"
+
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
+	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/labels"
 )
-import "github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 
 func createBreadBookPipeline() *contract.PipelineInfo {
 	scm, _ := contract.NewSCMContext("https://gitlab.com/aaa/bbb.git")
@@ -19,8 +20,8 @@ func createBreadBookPipeline() *contract.PipelineInfo {
 		"the-conquest-of-bread",
 		time.Now(),
 		[]contract.PipelineStage{},
-		fields.Set{},
-		fields.Set{},
+		labels.Set{},
+		labels.Set{},
 		&config.Data{},
 		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
 		contract.PipelineInfoWithLogsCollector(func() string {
@@ -40,8 +41,8 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		"the-conquest-of-bread",
 		time.Now(),
 		[]contract.PipelineStage{},
-		fields.Set{},
-		fields.Set{},
+		labels.Set{},
+		labels.Set{},
 		&config.Data{},
 		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
 		contract.PipelineInfoWithLogsCollector(func() string {
@@ -62,8 +63,8 @@ func TestOperator_CountHowManyTimesKubernetesResourceReceived(t *testing.T) {
 		"the-barcelona-school",
 		time.Now(),
 		[]contract.PipelineStage{},
-		fields.Set{},
-		fields.Set{},
+		labels.Set{},
+		labels.Set{},
 		&config.Data{},
 		contract.PipelineInfoWithUrl("https://dashboard.tekton.local/pipeline-some/pipeline"),
 		contract.PipelineInfoWithLogsCollector(func() string {
