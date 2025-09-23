@@ -9,6 +9,22 @@ import (
 	"k8s.io/client-go/tools/record"
 )
 
+type FakeValidator struct {
+
+}
+
+func (f *FakeValidator) ValidateRequestedEntry(group string, key string) error {
+	return nil
+}
+
+func (f *FakeValidator) ValidateConfig(data v1alpha1.Data) error {
+	return nil
+}
+
+func (f *FakeValidator) Add(schema Schema) {
+
+}
+
 type FakeCollector struct {
 }
 

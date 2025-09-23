@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/go-scm/scm/driver/azure"
 	"github.com/jenkins-x/go-scm/scm/driver/bitbucket"
@@ -19,8 +23,6 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
-	"net/http"
-	"strings"
 )
 
 // todo: Contribute to JX's GO SCM library a factory method - "NewFromConfig()" and delete this duplicate code there
@@ -71,7 +73,22 @@ func NewClientFromConfig(data config.Data, gitToken string) (*scm.Client, error)
 		return factory.FromRepoURL(repoURL)
 	}
 	driver := data.GetOrDefault("git-kind", "")
-	serverURL := data.GetOrDefault("git-server", "")
+	serverURL := strings.TrimSpace(data.GetOrDefault("git-server", ""))
+
+	// make sure the URL is valid / issue #45
+	if serverURL != "" {
+		// Default to https for scheme-less URLs. This is a sensible default but might not work for internal, http-only git servers.
+		// A more robust solution could introduce a separate configuration option for the scheme.
+		if !strings.Contains(serverURL, "://") {
+			serverURL = "https://" + serverURL
+		}
+
+		// make sure the url is valid
+		if _, urlErr := url.ParseRequestURI(serverURL); urlErr != nil {
+			return nil, fmt.Errorf("invalid git-server URL: %q. valid values are empty or a correctly formatted URL address", serverURL)
+		}
+	}
+
 	oauthToken := data.GetOrDefault("git-token", gitToken)
 	username := data.GetOrDefault("git-user", "")
 	if oauthToken == "" {
