@@ -73,10 +73,10 @@ func NewClientFromConfig(data config.Data, gitToken string) (*scm.Client, error)
 		return factory.FromRepoURL(repoURL)
 	}
 	driver := data.GetOrDefault("git-kind", "")
-	serverURL := data.GetOrDefault("git-server", "")
+	serverURL := strings.TrimSpace(data.GetOrDefault("git-server", ""))
 
 	// make sure the URL is valid / issue #45
-	if serverURL = strings.TrimSpace(serverURL); serverURL != "" {
+	if serverURL != "" {
 		// fallback to https:// in case, when URL is defined, but does not contain the scheme
 		if !strings.Contains(serverURL, "://") {
 			serverURL = "https://" + serverURL
